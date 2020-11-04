@@ -19,15 +19,15 @@
             </v-list>
         </v-navigation-drawer>
         <v-app-bar app color="brown darken-4" dark>
-            <v-btn class="hidden-md-and-up" @click="drawer = !drawer"></v-btn>
+            <v-btn class="hidden-md-and-up" @click="drawer = !drawer"
+                >Drop-Down</v-btn
+            >
             <v-spacer class="hidden-md-and-up"></v-spacer>
             <v-toolbar-title>{{ appTitle }}</v-toolbar-title>
             <v-btn text class="hidden-sm-and-down">Books</v-btn>
             <v-spacer class="hidden-sm-and-down"></v-spacer>
             <v-btn text class="hidden-sm-and-down">SIGN IN</v-btn>
-            <v-btn color="red lighten-3" class="hidden-sm-and-down"
-                >JOIN</v-btn
-            >
+            <v-btn class="hidden-sm-and-down">JOIN</v-btn>
         </v-app-bar>
     </span>
 </template>
