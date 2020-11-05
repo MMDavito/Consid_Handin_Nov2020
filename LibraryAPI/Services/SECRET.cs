@@ -12,3 +12,4 @@ namespace LibraryAPI.Services
         public readonly static string userName = "SA";
         public readonly static string password = "1Helvete4Lajf";
     }
+}

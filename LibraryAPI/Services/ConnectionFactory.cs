@@ -1,7 +1,7 @@
 using System;
 using System.Configuration;
 //using LibraryApi.Services.SECRET;
-using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 namespace LibraryAPI.Services{
     ///<summary>
     /// This Factory does not handle closing connections.
@@ -9,7 +9,9 @@ namespace LibraryAPI.Services{
     ///</summary>
     public class ConnectionFactory{    
         SqlConnectionFactory sqlConnFactory;
-        String connStr = "Data Source="+SECRET.dbServer+";User ID="+SECRET.userName+";Password="+SECRET.password+";"
+           cnn = new SqlConnection(connetionString);
+
+        String connStr = "Data Source="+SECRET.dbServer+";User ID="+SECRET.userName+";Password="+SECRET.password+";";
         //connetionString = "Data Source=ServerName;Initial Catalog=DatabaseName;User ID=UserName;Password=Password";
         String databaseName = SECRET.dbName;
         
