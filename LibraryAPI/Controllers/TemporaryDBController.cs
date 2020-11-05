@@ -4,24 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 namespace LibraryAPI.Controllers
 {
     [ApiController]
-    public class PeopleController : ControllerBase
+    public class TemporaryDBController : ControllerBase
     {
         [HttpGet("people/all")]
-        public ActionResult<IEnumerable<Person>> GetAll()
+        public ActionResult<IEnumerable<Shite>> GetAll()
         {
             return new[]
             {
-            new Person { Name = "Ana" },
-            new Person { Name = "Felipe" },
-            new Person { Name = "Emillia" }
+            new Shite { Name = "Ana" },
+            new Shite { Name = "Felipe" },
+            new Shite { Name = "Emillia" }
         };
         }
     }
 
-    public class Person
+    public class Shite
     {
         public string Name { get; set; }
     }

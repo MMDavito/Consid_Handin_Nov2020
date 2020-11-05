@@ -4,15 +4,15 @@
 --CREATE DATABASE testDB IF NOT EXISTS;
 
 CREATE DATABASE library;
-go
+--go
 use library;
 CREATE TABLE Category(
-    id int PRIMARY KEY,
-    category nvarchar
+    id int IDENTITY(1,1) PRIMARY KEY,
+    category nvarchar(200) NOT NULL UNIQUE--100 charachter category is unheard of
     );
-go
+--go
 CREATE TABLE LibraryItem(
-    id int PRIMARY KEY,
+    id int IDENTITY(1,1) PRIMARY KEY,
     category_id int,
     title nvarchar,
     author nvarchar,
@@ -30,7 +30,7 @@ CREATE TABLE LibraryItem(
 
 );
 CREATE TABLE Employee(
-    id int PRIMARY KEY,
+    id int IDENTITY(1,1) PRIMARY KEY,
     first_name nvarchar,
     last_name nvarchar,
     salary decimal,
@@ -38,4 +38,4 @@ CREATE TABLE Employee(
     is_manager bit,
     manager_id int --DEFAULT NULL
 );--Singular to stick with ONE naming convention instead of several.
-go
+--go

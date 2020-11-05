@@ -1,0 +1,7 @@
+use testDB
+DROP TABLE shite
+
+CREATE TABLE shite(
+    id int IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(200) NOT NULL UNIQUE
+)
