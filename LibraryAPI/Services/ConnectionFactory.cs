@@ -1,19 +1,17 @@
 using System;
 using System.Configuration;
 //using LibraryApi.Services.SECRET;
-using System.Data.SqlClient;
-namespace LibraryApi.Services
-{
+using System.Data.Entity.Infrastructure;
+namespace LibraryAPI.Services{
     ///<summary>
     /// This Factory does not handle closing connections.
     /// This responsobility is left to the programer using it.
     ///</summary>
     public class ConnectionFactory{    
         SqlConnectionFactory sqlConnFactory;
-        SECRET secret = new SECRET();
-        String connStr = "Data Source="+secret.dbServer+";User ID="+userName+";Password="+secret.password+";"
+        String connStr = "Data Source="+SECRET.dbServer+";User ID="+SECRET.userName+";Password="+SECRET.password+";"
         //connetionString = "Data Source=ServerName;Initial Catalog=DatabaseName;User ID=UserName;Password=Password";
-        String databaseName = secret.dbName;
+        String databaseName = SECRET.dbName;
         
         ///<summary>
         ///This constructor initiates an connstring, connect using "connect"
