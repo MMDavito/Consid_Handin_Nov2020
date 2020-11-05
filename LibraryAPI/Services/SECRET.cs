@@ -7,7 +7,7 @@ namespace LibraryAPI.Services
     /// </summary>
     public static class SECRET
     {
-        public readonly static string dbServer = "127.0.0.1";
+        public readonly static string dbServer = "localhost";
         public readonly static string dbName = "testDB";
         public readonly static string userName = "SA";
         public readonly static string password = "1Helvete4Lajf";

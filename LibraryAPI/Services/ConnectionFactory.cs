@@ -1,33 +1,21 @@
-using System;
-using System.Configuration;
-//using LibraryApi.Services.SECRET;
-using System.Data.SqlClient;
-namespace LibraryAPI.Services{
+using Microsoft.Data.SqlClient;
+namespace LibraryAPI.Services
+{
     ///<summary>
     /// This Factory does not handle closing connections.
     /// This responsobility is left to the programer using it.
     ///</summary>
-    public class ConnectionFactory{    
-        SqlConnectionFactory sqlConnFactory;
-           cnn = new SqlConnection(connetionString);
-
-        String connStr = "Data Source="+SECRET.dbServer+";User ID="+SECRET.userName+";Password="+SECRET.password+";";
-        //connetionString = "Data Source=ServerName;Initial Catalog=DatabaseName;User ID=UserName;Password=Password";
-        String databaseName = SECRET.dbName;
-        
-        ///<summary>
-        ///This constructor initiates an connstring, connect using "connect"
-        ///</summary>
-        public ConnectionFactory(){
-            sqlConnFactory = new SqlConnectionFactory(connStr);
+    public class ConnectionFactory
+    {
+        public SqlConnection cnn = null;
+        public ConnectionFactory()
+        {
+            cnn = new SqlConnection(
+                "Server=tcp:" + SECRET.dbServer + ",1433;" +
+                "Database=" + SECRET.dbName + ";User ID=" + SECRET.userName + ";" +
+                "Password=" + SECRET.password + ";Encrypt=False;" +
+                "TrustServerCertificate=False;Connection Timeout=30;"
+                );
         }
-
-        public DbConnection connect(){
-            DbConnection dbCon = sqlConnFactory.CreateConnection(databaseName);//Does this not throw/raise exceptions?
-            return dbCon;
-        }
-
-//public SqlConnection connect()
-
-}
+    }
 }
