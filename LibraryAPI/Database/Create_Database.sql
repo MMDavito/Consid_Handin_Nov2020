@@ -14,8 +14,8 @@ CREATE TABLE Category(
 CREATE TABLE LibraryItem(
     id int IDENTITY(1,1) PRIMARY KEY,
     category_id int,
-    title nvarchar,
-    author nvarchar,
+    title nvarchar(200),
+    author nvarchar(200),
     pages int,--DEFAULT NULL
     run_time_minutes int,--DEFAULT NULL
     is_borrowed bit,--1 ==true? 0 == False?
@@ -31,8 +31,8 @@ CREATE TABLE LibraryItem(
 );
 CREATE TABLE Employee(
     id int IDENTITY(1,1) PRIMARY KEY,
-    first_name nvarchar,
-    last_name nvarchar,
+    first_name nvarchar(100),
+    last_name nvarchar(100),
     salary decimal,
     is_ceo bit,
     is_manager bit,
