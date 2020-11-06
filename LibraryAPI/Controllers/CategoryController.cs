@@ -25,9 +25,9 @@ namespace LibraryAPI.Controllers
             return service.getAll();
         }
         [HttpGet("category/{id:int}")]
-        public ActionResult GetCategory(int id)//Could return 404 and the like, but won't
+        public string GetCategory(int id)//Could return 404 and the like, but won't
         {
-            return null;
+            return service.getOne(id);
         }
 
         [HttpPost("/category")]
@@ -40,17 +40,35 @@ namespace LibraryAPI.Controllers
             if (HelperVariables.IS_DEBUG) Console.WriteLine(content);
 
             Category myCategory = JsonConvert.DeserializeObject<Category>(content);
-            
+
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to create:");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory.category);
 
-            //return new HttpResponseMessage(HttpStatusCode.NotModified);
-            return new HttpResponseMessage((HttpStatusCode)418);
-
+            return service.insert(myCategory);
+            //return new HttpResponseMessage((HttpStatusCode)418);
             //return request.CreateResponse(HttpStatusCode.OK, user);
+        }
+        [HttpPut("category/{id:int}")]
+        public HttpResponseMessage UpdateCategory(int id, [FromBody] string content)//Could return 404 and the like, but won't
+        {
+             Console.WriteLine("HEJJE");
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to update:");
+            if (HelperVariables.IS_DEBUG) Console.WriteLine(id);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine(content);
 
+            Category myCategory = JsonConvert.DeserializeObject<Category>(content);
 
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to update:");
+            if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory.category);
+
+            return service.update(id,myCategory);
+        }
+        [HttpDelete("category/{id:int}")]
+        public ActionResult DeleteCategory(int id)//Could return 404 and the like, but won't
+        {
+            return null;
         }
     }
 }
