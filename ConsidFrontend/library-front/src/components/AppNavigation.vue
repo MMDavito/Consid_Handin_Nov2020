@@ -1,5 +1,9 @@
 <template>
     <span>
+        <!--
+        The navigation-drawer is abit buggy, requires to click to close it even though window size shows the regular 
+        buttons.
+        !-->
         <v-navigation-drawer
             app
             v-model="drawer"
@@ -10,9 +14,14 @@
             <v-list>
                 <template v-for="(item, index) in items">
                     <v-list-item :key="index">
+                        <v-btn text @click="$router.push(item.onclick)">{{
+                            item.title
+                        }}</v-btn>
+                        <!--
                         <v-list-item-content>
                             {{ item.title }}
                         </v-list-item-content>
+                        !-->
                     </v-list-item>
                     <v-divider :key="`divider-${index}`"></v-divider>
                 </template>
@@ -24,7 +33,21 @@
             >
             <v-spacer class="hidden-md-and-up"></v-spacer>
             <v-toolbar-title>{{ appTitle }}</v-toolbar-title>
-            <v-btn text class="hidden-sm-and-down">Books</v-btn>
+            <v-btn text class="hidden-sm-and-down" @click="$router.push('/')"
+                >Home</v-btn
+            >
+            <v-btn
+                text
+                class="hidden-sm-and-down"
+                @click="$router.push('library_items')"
+                >Library Items</v-btn
+            >
+            <v-btn
+                text
+                class="hidden-sm-and-down"
+                @click="$router.push('/categories')"
+                >Categories</v-btn
+            >
             <v-spacer class="hidden-sm-and-down"></v-spacer>
             <v-btn text class="hidden-sm-and-down">SIGN IN</v-btn>
             <v-btn class="hidden-sm-and-down">JOIN</v-btn>
@@ -39,7 +62,14 @@ export default {
         return {
             appTitle: 'Library',
             drawer: false,
-            items: [{ title: 'Books' }, { title: 'Sign In' }, { title: 'Join' }]
+            items: [
+                { title: 'Home', onclick: '/' },
+                { title: 'Library Item', onclick: 'library_items' },
+                {
+                    title: 'Categories',
+                    onclick: 'categories'
+                }
+            ]
         };
     }
 };
