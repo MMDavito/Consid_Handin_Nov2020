@@ -100,8 +100,6 @@
 </template>
 
 <script>
-import $ from 'jquery';
-
 export default {
     name: 'CategoriesBody',
     data() {
@@ -110,15 +108,15 @@ export default {
         };
     },
     mounted() {
-        var settings = {
-            url: 'https://127.0.0.1:5001/category/all',
+        var requestOptions = {
             method: 'GET',
-            timeout: 0
+            redirect: 'follow'
         };
 
-        $.ajax(settings).done(function(response) {
-            console.log(response);
-        });
+        fetch('https://127.0.0.1:5001/category/all', requestOptions)
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log('error', error));
     }
 };
 </script>
