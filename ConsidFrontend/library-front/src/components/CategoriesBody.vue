@@ -1,20 +1,24 @@
 <template>
     <v-container>
         <v-layout column>
+            <div class="headline mt-3">Empty placeholder before delete</div>
+
             <v-flex class="display-2 text-xs-center my-5"
                 >Big Title Goes Here</v-flex
             >
-
             <v-flex>
-                <!--
-                <ListView for="c in categories" class="list-group">
-                    <v-template>
-                        <StackLayout class="list-group-item">
-                            <Label :text="c.category" />
-                        </StackLayout>
-                    </v-template>
-                </ListView>
-                    !-->
+                <ul id="Categories">
+                    <li v-for="c in categories" :key="c.category">
+                        {{ c.category }} With id {{ c.id }}
+                    </li>
+                </ul>
+                <div v-for="c in categories" :key="c.category">
+                    <label>{{ c.category }}</label
+                    ><br />
+                    <input type="text" name="c.category" v-model="c.category" />
+                    <v-btn color="primary" class="update" :name="c.id">Update</v-btn>
+                    <v-btn color="error" class="delete" :name="c.id">Delete</v-btn>
+                </div>
             </v-flex>
             <v-flex>
                 <div class="headline mt-3">Lorem ipsum</div>
@@ -104,7 +108,8 @@ export default {
     name: 'CategoriesBody',
     data() {
         return {
-            categories: []
+            categories: [],
+            pokemon: []
         };
     },
     mounted() {
@@ -115,8 +120,23 @@ export default {
 
         fetch('https://127.0.0.1:5001/category/all', requestOptions)
             .then(response => response.text())
-            .then(result => console.log(result))
+            .then(result => {
+                console.log(result);
+                var obj = JSON.parse(result);
+                console.log(obj);
+                this.categories = obj;
+            })
             .catch(error => console.log('error', error));
+        /*
+        console.log('Will now do pokemon:');
+        fetch('https://pokeapi.co/api/v2/pokemon/?limit=151', requestOptions)
+            .then(response => response.text())
+            .then(result => {
+                var obj = JSON.parse(result);
+                this.pokemon = obj.results;
+            })
+            .catch(error => console.log('error', error));
+            */
     }
 };
 </script>
