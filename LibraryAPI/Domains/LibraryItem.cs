@@ -64,15 +64,64 @@ namespace LibraryAPI.Domains
                 System.Console.WriteLine("Default should never occur in library item domain unless wrong spelling of type.");
                 return;
             }
-
+            //Cannot controll "isBorrowable" here because lazy and no time for unit testing.
+            //Better to check that in service
+            if (borrowDate != null)
+            {
+                if (borrower == null || borrower.Length == 0 || borrower.Length > maxByteLength) return;
+            }
+            else if (borrower != null)
+            {//Borrow date is null, but borrower is not
+                if (HelperVariables.IS_DEBUG) System.Console.WriteLine("Borowdate is null, but borrower has length: " + borrower.Length);
+                return;
+                //could check length..... 
+            }
             //Then set and controll the generic fields:
             this.id = id;
             this.title = title;//Already checked
             this.categoryId = categoryId;
+
             this.isBorrowable = isBorrowable;
             this.borrower = borrower;
             this.borrowDate = borrowDate;
             this.type = type;
+        }
+
+        ///<summary>
+        /// Will leave borowDate null if reference book or the like
+        /// Should check in querry on checkin in, so it is not already borrowed (never trust frontend)
+        ///</summary>
+        public void checkIn(string borrower, DateTime borrowDate)
+        {
+            if (type.Equals("Reference Book")) { return; }
+
+            if (borrowDate != null)
+            {
+                if (borrower == null || borrower.Length == 0 || borrower.Length > maxByteLength) return;
+            }
+            else if (borrower != null)
+            {//Borrow date is null, but borrower is not
+                if (HelperVariables.IS_DEBUG) System.Console.WriteLine("Borowdate is null, but borrower has length: " + borrower.Length);
+                return;
+                //could check length..... 
+            }
+            this.borrowDate = borrowDate;
+            this.borrower = borrower;
+            this.isBorrowable = false;
+
+        }
+
+        ///<summary>
+        /// Does no checks, except not being reference book, will set borrowdate and borrower to null, and "isBorrowable" to true.
+        /// Should check in querry on checkin in, so it is not already borrowed (never trust frontend)
+        ///</summary>
+        public void checkOut()
+        {
+            if (type.Equals("Reference Book")) { return; }
+            //Else no checks:
+            this.borrowDate = null;
+            this.borrower = null;
+            this.isBorrowable = true;
         }
     }
 }

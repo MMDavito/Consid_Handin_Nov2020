@@ -17,11 +17,14 @@ namespace LibraryAPI.Controllers
     [ApiController]
     public class LibraryItemController : ControllerBase
     {
+        LibraryItemService service = new LibraryItemService();
+
         //CategoryService service = new CategoryService();
         [HttpGet("library_item/all")]//I prefer "/categories", but but...
+        //public string GetAll()
         public string GetAll()
         {
-            return null;
+            return service.getAll();
         }
         [HttpGet("library_item/{id:int}")]
         public string GetOne(int id)//Could return 404 and the like, but won't
@@ -29,12 +32,16 @@ namespace LibraryAPI.Controllers
             return null;
         }
 
-        [HttpPost("/libary_item")]
+        [HttpPost("library_item")]
         public HttpResponseMessage Create([FromBody] string content)
         //        public HttpResponseMessage CreateCategory([FromBody] Category myCategory)
 
         {//Firstly check so it does not set borrower or is Borrowable
-            return new HttpResponseMessage(HttpStatusCode.NotImplemented);
+            //return new HttpResponseMessage(HttpStatusCode.NotImplemented);
+            Category temp = JsonConvert.DeserializeObject<Category>(content);
+            HelperVariables.skit=temp.category;
+            Console.WriteLine("Hello want to create? "+content);
+            return service.insert(null);
 
         }
         [HttpPut("library_item/{id:int}")]
