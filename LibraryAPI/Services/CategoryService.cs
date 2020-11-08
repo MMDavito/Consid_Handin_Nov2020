@@ -193,5 +193,63 @@ namespace LibraryAPI.Services
             }
             return JsonConvert.SerializeObject(categories);
         }
+        public HttpResponseMessage delete(int id)
+        {
+            if (id < 0) return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            int rowsAffected = -1;
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    DELETE FROM Category WHERE id = @ID;
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    //TODO FIND WHERE TRYCATCH SHALL BE
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in category service when deleteing stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
     }
 }

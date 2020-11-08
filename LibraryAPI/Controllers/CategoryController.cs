@@ -52,7 +52,7 @@ namespace LibraryAPI.Controllers
         [HttpPut("category/{id:int}")]
         public HttpResponseMessage UpdateCategory(int id, [FromBody] string content)//Could return 404 and the like, but won't
         {
-             Console.WriteLine("HEJJE");
+            Console.WriteLine("HEJJE");
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to update:");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(id);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(content);
@@ -63,12 +63,12 @@ namespace LibraryAPI.Controllers
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory.category);
 
-            return service.update(id,myCategory);
+            return service.update(id, myCategory);
         }
         [HttpDelete("category/{id:int}")]
-        public ActionResult DeleteCategory(int id)//Could return 404 and the like, but won't
+        public HttpResponseMessage DeleteCategory(int id)//Could return 404 and the like, but won't
         {
-            return null;
+            return service.delete(id);
         }
     }
 }

@@ -266,8 +266,8 @@ export default {
                         document.getElementById(
                             clicked_id
                         ).style.backgroundColor = 'red';
-                    }else{
-                        this.categories.splice(clicked_id,1)
+                    } else {
+                        this.categories.splice(clicked_id, 1);
                     }
                 })
                 .catch(error => console.log('error', error));
