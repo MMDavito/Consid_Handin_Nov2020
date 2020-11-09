@@ -59,15 +59,71 @@ namespace LibraryAPI.Services
                         string type = reader.GetString(9);
 
 
+                        string tempDate = borrow_date == null ? tempDate = null : tempDate = ((DateTime)borrow_date).ToString(HelperVariables.expectedFormat);
 
                         if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Title: " + title);
-                        items.AddLast((new LibraryItem(id, category_id, title, author, pages, run_time_minutes, is_borrowable, borrower, borrow_date, type)));
+                        items.AddLast((new LibraryItem(id, category_id, title, author, pages, run_time_minutes, is_borrowable, borrower, tempDate, type)));
                     }
                     cnn.Close();
                 }
                 return JsonConvert.SerializeObject(items);
             }
         }
+        public string getOne(int id)
+        {
+            LinkedList<LibraryItem> items = new LinkedList<LibraryItem>();
+
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    SELECT * FROM LibraryItem WHERE id = @id;
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    SqlDataReader reader = sc.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string author = null;
+                        Nullable<int> pages = null;
+                        Nullable<int> run_time_minutes = null;
+                        string borrower = null;
+                        Nullable<DateTime> borrow_date = null;
+
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("\n");
+                        System.Console.WriteLine("HELVETE HEMTADE ID: " + id);
+                        int category_id = reader.GetInt32(1);
+                        string title = reader.GetString(2);
+                        if (!reader.IsDBNull(3)) author = reader.GetString(3);
+                        if (!reader.IsDBNull(4)) pages = reader.GetInt32(4);
+                        if (!reader.IsDBNull(5)) run_time_minutes = reader.GetInt32(5);
+                        System.Console.WriteLine("Will now get borrowable");
+                        bool is_borrowable = reader.GetBoolean(6);
+                        System.Console.WriteLine("Borrowable is: " + is_borrowable);
+
+                        if (!reader.IsDBNull(7)) borrower = reader.GetString(7);
+                        if (!reader.IsDBNull(8)) borrow_date = reader.GetDateTime(8);
+                        string type = reader.GetString(9);
+
+
+                        string tempDate = borrow_date == null ? tempDate = null : tempDate = ((DateTime)borrow_date).ToString(HelperVariables.expectedFormat);
+
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Title: " + title);
+                        items.AddLast((new LibraryItem(id, category_id, title, author, pages, run_time_minutes, is_borrowable, borrower, tempDate, type)));
+                    }
+                    cnn.Close();
+                }
+                return JsonConvert.SerializeObject(items);
+            }
+        }
+
+
 
         ///<summary>
         /// Inserts into database, catches duplicates and long inputs (byte_count>200). Returns 201 created, 409 duplicate or 400 baad input
@@ -125,28 +181,23 @@ VALUES(
                         sc.Parameters["@title"].Value = lib_item.title;
 
                         sc.Parameters.Add("@author", SqlDbType.NVarChar);
-                        sc.Parameters["@author"].IsNullable = true;
-                        sc.Parameters["@author"].Value = lib_item.author;
+                        sc.Parameters["@author"].Value = (object)lib_item.author ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
 
                         sc.Parameters.Add("@pages", SqlDbType.Int);
-                        sc.Parameters["@pages"].IsNullable = true;
-                        sc.Parameters["@pages"].Value = lib_item.pages;
+                        sc.Parameters["@pages"].Value = (object)lib_item.pages ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
 
                         sc.Parameters.Add("@run_time_minutes", SqlDbType.Int);
-                        //sc.Parameters["@run_time_minutes"].IsNullable = true;
-                        sc.Parameters["@run_time_minutes"].Value = (object)lib_item.runTimeMinutes ?? DBNull.Value;
+                        sc.Parameters["@run_time_minutes"].Value = (object)lib_item.runTimeMinutes ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!
 
                         sc.Parameters.Add("@is_borrowable", SqlDbType.Bit);
                         sc.Parameters["@is_borrowable"].Value = lib_item.isBorrowable;
 
 
                         sc.Parameters.Add("@borrower", SqlDbType.NVarChar);
-                        sc.Parameters["@borrower"].IsNullable = true;
-                        sc.Parameters["@borrower"].Value = lib_item.borrower;
+                        sc.Parameters["@borrower"].Value = (object)lib_item.borrower ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
 
                         sc.Parameters.Add("@borrow_date", SqlDbType.Date);
-                        sc.Parameters["@borrow_date"].IsNullable = true;
-                        sc.Parameters["@borrow_date"].Value = lib_item.borrowDate;
+                        sc.Parameters["@borrow_date"].Value = (object)lib_item.borrowDate ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
 
                         sc.Parameters.Add("@type", SqlDbType.NVarChar);
                         sc.Parameters["@type"].Value = lib_item.type;

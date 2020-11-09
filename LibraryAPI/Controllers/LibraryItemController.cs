@@ -29,7 +29,7 @@ namespace LibraryAPI.Controllers
         [HttpGet("library_item/{id:int}")]
         public string GetOne(int id)//Could return 404 and the like, but won't
         {
-            return null;
+            return service.getOne(id);
         }
 
         [HttpPost("library_item")]
@@ -40,10 +40,15 @@ namespace LibraryAPI.Controllers
             //return new HttpResponseMessage(HttpStatusCode.NotImplemented);
             LibraryItem temp = JsonConvert.DeserializeObject<LibraryItem>(content);
             //HelperVariables.skit=temp.category;
-            Console.WriteLine("Hello want to create? "+content);
+            Console.WriteLine("Hello want to create? " + content);
             return service.insert(temp);
 
         }
+        ///<summary>
+        /// This will NOT leave borrower and borrower date unchanged, unless changed to reference_book (always all null and unborrowable if reference-book)!
+        ///Must test to change from reference-book to book, could crash system, or make books unborrowable.
+        // Use checkin and checkout to borrow.
+        ///</summary>
         [HttpPut("library_item/{id:int}")]
         public HttpResponseMessage Update(int id, [FromBody] string content)//Could return 404 and the like, but won't
         {
@@ -57,6 +62,13 @@ namespace LibraryAPI.Controllers
         [HttpPut("library_item/check_in/{id:int}")]
         public HttpResponseMessage CheckIn(int id, [FromBody] string content)//Could return 404 and the like, but won't
         {
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Content to check in: " + content);
+            LibraryItem myItem = JsonConvert.DeserializeObject<LibraryItem>(content);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Date of checkin: " + myItem.borrowDate);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Title of checkin: " + myItem.title);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Title of checkin =Null?: " + myItem.title == null);
+
+
             return new HttpResponseMessage(HttpStatusCode.NotImplemented);
 
         }

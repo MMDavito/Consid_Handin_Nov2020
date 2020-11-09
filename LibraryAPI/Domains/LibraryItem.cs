@@ -26,8 +26,9 @@ namespace LibraryAPI.Domains
         ///
         /// Category_id should be checked and be valid from frontend, or it will return database error (httpstatus 400 bad input without detailed message)
         ///</summary>
-        public LibraryItem(Nullable<int> id, int categoryId, string title, string author, Nullable<int> pages, Nullable<int> runTimeMinutes, bool isBorrowable, string borrower, Nullable<DateTime> borrowDate, string type)
+        public LibraryItem(Nullable<int> id, int categoryId, string title, string author, Nullable<int> pages, Nullable<int> runTimeMinutes, bool isBorrowable, string borrower, string borrowDate, string type)
         {
+            Console.WriteLine("DATE BORORWED(probs not string): " + borrowDate);
             //Set the specific variables so it is clear it needs to be set in specific cases.
             this.runTimeMinutes = null;
             this.pages = null;
@@ -68,7 +69,12 @@ namespace LibraryAPI.Domains
             }
             else if (type.Equals("DVD") || type.Equals("Audio Book"))
             {
-                if (runTimeMinutes == null || runTimeMinutes <= 0) return;
+                if (runTimeMinutes == null || runTimeMinutes <= 0)
+                {
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("WHY DA FUCK RETURN HERE 2?");
+
+                    return;
+                }
                 //ELSE IS VALID
                 this.runTimeMinutes = runTimeMinutes;
             }
@@ -81,10 +87,15 @@ namespace LibraryAPI.Domains
             //Better to check that in service
             if (borrowDate != null)
             {
-                if (borrower == null || borrower.Length == 0 || borrower.Length > HelperVariables.maxByteLength) return;
+                if (borrower == null || borrower.Length == 0 || borrower.Length > HelperVariables.maxByteLength)
+                {
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("WHY DA FUCK RETURN HERE?");
+                    return;
+                }
             }
             else if (borrower != null)
             {//Borrow date is null, but borrower is not
+                Console.WriteLine("Is boorowdate null?: " + (borrowDate == null));
                 if (HelperVariables.IS_DEBUG) System.Console.WriteLine("Borowdate is null, but borrower has length: " + borrower.Length);
                 return;
                 //could check length..... 
@@ -96,7 +107,24 @@ namespace LibraryAPI.Domains
 
             this.isBorrowable = isBorrowable;
             this.borrower = borrower;
-            this.borrowDate = borrowDate;
+            DateTime theDate;
+            bool result = DateTime.TryParseExact(
+                borrowDate,
+                HelperVariables.expectedFormat,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out theDate);
+            if (result)
+            {
+                Console.WriteLine("I MANAGED TO GET DATED: " + theDate.ToString(HelperVariables.expectedFormat));
+                this.borrowDate = theDate;
+            }
+            else
+            {
+                Console.WriteLine("I failed TO GET DATED");
+
+                return;
+            }
             this.type = type;
             Console.WriteLine("Hello from the booookeli domain");
         }

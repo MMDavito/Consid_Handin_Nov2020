@@ -64,19 +64,6 @@
                     >
                     <br />
                 </div>
-                <div>
-                    <label>Add new category:</label><br />
-                    <input
-                        placeholder="Fill here"
-                        class="input"
-                        id="new_cat"
-                        type="text"
-                        name="new_cat"
-                    />
-                    <v-btn color="primary" class="add" @click="add()"
-                        >Create</v-btn
-                    >
-                </div>
             </v-flex>
         </v-layout>
     </v-container>
@@ -239,12 +226,73 @@ export default {
                 );
         },
         check_in: function(list_index) {
-            alert(
-                'Will check in: ' +
-                    list_index +
-                    '\n' +
-                    this.library_items[list_index]
-            );
+            console.log('Index clicked: ' + list_index);
+            var item = this.library_items[list_index];
+            console.log('Item is: ' + item.title);
+            var tempId = item.id;
+            console.log('Item id is: ' + tempId);
+            console.log('Item type is: ' + item.type);
+            console.log('Item from list type is: ' + this.library_items[list_index].type);
+
+
+            var tempInput = document.getElementById('borrower_' + list_index);
+            var borrower = tempInput.value;
+            if (borrower == null || borrower.length == 0) {
+                document.getElementById(
+                    'borrower_' + list_index
+                ).style.backgroundColor = 'red';
+                return;
+            } else {
+                document.getElementById(
+                    'borrower_' + list_index
+                ).style.backgroundColor = null;
+            }
+            tempInput = document.getElementById('borrow_date_' + list_index);
+            var borrower_date = tempInput.value;
+            if (borrower_date == null) {
+                document.getElementById(
+                    'borrow_date_' + list_index
+                ).style.backgroundColor = 'red';
+                return;
+            } else {
+                document.getElementById(
+                    'borrow_date_' + list_index
+                ).style.backgroundColor = null;
+            }
+
+            item.borrower = borrower;
+            item.borrowDate = borrower_date;
+            var raw = JSON.stringify(item);
+            console.log('RawForCheckin: ' + raw);
+            raw = JSON.stringify(raw);
+            console.log('RawerForCheckin: ' + raw);
+
+            var myHeaders = new Headers();
+            myHeaders.append('Content-Type', 'application/json');
+            var requestOptions = {
+                method: 'PUT',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            var url = 'https://127.0.0.1:5001/library_item/check_in/' + tempId;
+            fetch(url, requestOptions)
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    console.log('Status var: ' + result.statusCode);
+                    if (result.statusCode != 200) {
+                        console.log('Failed chekin in');
+                        alert(
+                            'Failed chekin in, would give reason, but notime to translate response, and bad to give user verbose server info.'
+                        );
+                    } else {
+                        this.$set(this.library_items, list_index, {
+                            item
+                        });
+                    }
+                })
+                .catch(error => console.log('HELVETES ERROR SKIT', error));
         },
         check_out: function(list_index) {
             alert(
