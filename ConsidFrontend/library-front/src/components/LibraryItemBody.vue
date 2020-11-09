@@ -13,6 +13,7 @@
                 </ul>
                 <div v-for="(l, index) in library_items" :key="l.title">
                     <label>{{ l.title }} ({{ l.acro }})</label><br />
+                    <label :for="'borrower_' + index">Borrowed by: </label>
                     <input
                         class="input"
                         :id="'borrower_' + index"
@@ -21,6 +22,7 @@
                         :value="l.borrower"
                         placeholder="BORROWED BY"
                     />
+                    <label :for="'borrow_date_' + index">Date borrowed: </label>
                     <input
                         class="input"
                         :id="'borrow_date_' + index"
@@ -235,6 +237,22 @@ export default {
                     (accumulator, word) => accumulator + word.charAt(0),
                     ''
                 );
+        },
+        check_in: function(list_index) {
+            alert(
+                'Will check in: ' +
+                    list_index +
+                    '\n' +
+                    this.library_items[list_index]
+            );
+        },
+        check_out: function(list_index) {
+            alert(
+                'Will check out: ' +
+                    list_index +
+                    '\n' +
+                    this.library_items[list_index]
+            );
         }
     }
 };

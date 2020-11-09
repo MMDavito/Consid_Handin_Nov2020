@@ -48,9 +48,12 @@
                 @click="$router.push('/categories')"
                 >Categories</v-btn
             >
-            <v-spacer class="hidden-sm-and-down"></v-spacer>
-            <v-btn text class="hidden-sm-and-down">SIGN IN</v-btn>
-            <v-btn class="hidden-sm-and-down">JOIN</v-btn>
+            <v-btn
+                text
+                class="hidden-sm-and-down"
+                @click="$router.push('create_library_items')"
+                >Create Library Items</v-btn
+            >
         </v-app-bar>
     </span>
 </template>
@@ -68,6 +71,10 @@ export default {
                 {
                     title: 'Categories',
                     onclick: 'categories'
+                },
+                {
+                    title: 'Create Library Item',
+                    onclick: 'create_library_items'
                 }
             ]
         };

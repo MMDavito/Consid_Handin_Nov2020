@@ -3,7 +3,7 @@
         <form>
             <v-layout column>
                 <v-flex class="display-2 text-xs-center my-5"
-                    >To change borrowed, check out and recheck</v-flex
+                    >Please fill all fields before pressing "Create"</v-flex
                 >
                 <v-flex>
                     <div>
@@ -12,7 +12,6 @@
                             class="input"
                             id="title"
                             type="text"
-                            :value="library_item.title"
                             placeholder="Title"
                         />
                         <label for="category_select">Category: </label>
@@ -31,65 +30,58 @@
                         <label
                             for="author"
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             >Author:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             type="text"
                             id="author"
-                            :value="library_item.author"
                             placeholder="Author"
                         />
                         <label
                             for="pages"
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             >Pages:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             type="number"
                             id="pages"
-                            :value="library_item.pages"
                             placeholder="Pages"
                             min="1"
                         />
                         <label
                             for="runTimeMinutes"
                             v-if="
-                                library_item.type == 'DVD' ||
-                                    library_item.type == 'Audio Book'
+                                selected_type == 'DVD' ||
+                                    selected_type == 'Audio Book'
                             "
                             >Length minutes:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'DVD' ||
-                                    library_item.type == 'Audio Book'
+                                selected_type == 'DVD' ||
+                                    selected_type == 'Audio Book'
                             "
                             type="number"
                             id="runTimeMinutes"
-                            :value="library_item.runTimeMinutes"
                             placeholder="Length Minutes"
                             min="1"
                         />
                         <label for="selectType">Type: </label>
-                        <select
-                            v-model="selected_type"
-                            v-on-change="changed()"
-                            id="selectType"
-                        >
+                        <select v-model="selected_type" id="selectType">
                             <option
                                 v-for="type in types"
                                 v-bind:key="type"
@@ -99,19 +91,8 @@
                             </option>
                         </select>
                         <br />
-                        <v-btn
-                            color="primary"
-                            class="update"
-                            :name="library_item.id"
-                            @click="update()"
-                            >Update</v-btn
-                        >
-                        <v-btn
-                            color="error"
-                            class="delete"
-                            :name="library_item.id"
-                            @click="remove()"
-                            >Delete</v-btn
+                        <v-btn color="primary" class="create" @click="create()"
+                            >Create</v-btn
                         >
                         <br />
                     </div>
@@ -123,14 +104,13 @@
 
 <script>
 export default {
-    name: 'LibraryItemEditBody',
+    name: 'CreateLibraryItem_Body',
     data() {
         return {
-            library_item: {},
             selected_category: null,
             categories: [],
             types: ['Book', 'DVD', 'Audio Book', 'Reference Book'],
-            selected_type: null
+            selected_type: 'Book'
         };
     },
     mounted() {
@@ -138,21 +118,7 @@ export default {
             method: 'GET',
             redirect: 'follow'
         };
-        console.log(
-            'Will now querry server for library_item: ' + this.$route.params.id
-        ); //Could probably use session/routerscope, but this works.
-        var url =
-            'https://127.0.0.1:5001/library_item/' + this.$route.params.id;
-        fetch(url, requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                console.log(result);
-                this.library_item = result[0];
-                this.selected_category = this.library_item.categoryId;
-                this.selected_type = this.library_item.type;
-            })
-            .catch(error => console.log('error', error));
-        url = 'https://127.0.0.1:5001/category/all';
+        var url = 'https://127.0.0.1:5001/category/all';
         fetch(url, requestOptions)
             .then(response => response.json())
             .then(result => {
@@ -162,15 +128,15 @@ export default {
             .catch(error => console.log('error', error));
     },
     methods: {
-        update: function() {
+        create: function() {
             var temp = document.getElementById('title');
             var title = temp == null ? null : temp.value;
             var author = null;
             var pages = null;
             var runTimeMinutes = null;
             if (
-                this.library_item.type == 'Book' ||
-                this.library_item.type == 'Reference Book'
+                this.selected_type == 'Book' ||
+                this.selected_type == 'Reference Book'
             ) {
                 temp = document.getElementById('author');
                 if (temp == null || temp.value.length == 0) {
@@ -194,8 +160,8 @@ export default {
                     ).style.backgroundColor = null;
                 pages = temp.value;
             } else if (
-                this.library_item.type == 'DVD' ||
-                this.library_item.type == 'Audio Book'
+                this.selected_type == 'DVD' ||
+                this.selected_type == 'Audio Book'
             ) {
                 temp = document.getElementById('runTimeMinutes');
                 if (runTimeMinutes <= 0) {
@@ -218,31 +184,37 @@ export default {
 
             var myHeaders = new Headers();
             myHeaders.append('Content-Type', 'application/json');
-            this.library_item.title = title;
-            this.library_item.author = author;
-            this.library_item.pages = pages;
-            this.library_item.runTimeMinutes = runTimeMinutes;
+            var obj = {};
+            obj.title = title;
+            obj.author = author;
+            obj.pages = pages;
+            obj.runTimeMinutes = runTimeMinutes;
+            obj.type = this.selected_type;
+            obj.categoryId = this.selected_category;
+            obj.borrower = null;
+            obj.borrowDate = null;
+            obj.isBorrowable = obj.type == 'Reference Book' ? false : true;
+
             //Borrow won't change, nore will type, since "onChange"
             //var category = null;
-            var raw = JSON.stringify(this.library_item);
-            console.log('Updated item is: ' + raw);
+            var raw = JSON.stringify(obj);
+            console.log('Item to create is: ' + raw);
             raw = JSON.stringify(raw);
-            console.log('Updated restringed item is: ' + raw);
+            console.log('Restringed item is: ' + raw);
 
             var requestOptions = {
-                method: 'PUT',
+                method: 'POST',
                 headers: myHeaders,
                 body: raw,
                 redirect: 'follow'
             };
-            var url =
-                'https://127.0.0.1:5001/library_item/' + this.library_item.id;
+            var url = 'https://127.0.0.1:5001/library_item/';
             fetch(url, requestOptions)
                 .then(response => response.json())
                 .then(result => {
                     console.log(result);
                     console.log('Status var: ' + result.statusCode);
-                    if (result.statusCode != 200) {
+                    if (result.statusCode != 201) {
                         console.log('Will change colur');
                         alert(
                             'Failed updateing: Possibly will print error, but probably not, possibly to long input.\nOr lacking correct category'
@@ -253,7 +225,7 @@ export default {
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
-        },
+        } /*,
         changed: function() {
             if (this.library_item.type == 'Reference Book') {
                 this.library_item.type = this.selected_type;
@@ -274,7 +246,7 @@ export default {
             } else {
                 this.$set(this.library_item, 'type', this.selected_type);
             }
-        }
+        }*/
     }
 };
 </script>
