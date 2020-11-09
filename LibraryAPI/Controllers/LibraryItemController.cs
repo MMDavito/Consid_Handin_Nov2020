@@ -38,10 +38,10 @@ namespace LibraryAPI.Controllers
 
         {//Firstly check so it does not set borrower or is Borrowable
             //return new HttpResponseMessage(HttpStatusCode.NotImplemented);
-            Category temp = JsonConvert.DeserializeObject<Category>(content);
-            HelperVariables.skit=temp.category;
+            LibraryItem temp = JsonConvert.DeserializeObject<LibraryItem>(content);
+            //HelperVariables.skit=temp.category;
             Console.WriteLine("Hello want to create? "+content);
-            return service.insert(null);
+            return service.insert(temp);
 
         }
         [HttpPut("library_item/{id:int}")]

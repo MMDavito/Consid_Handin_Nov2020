@@ -18,10 +18,10 @@ CREATE TABLE LibraryItem(
     author nvarchar(200),
     pages int,--DEFAULT NULL
     run_time_minutes int,--DEFAULT NULL
-    is_borrowed bit,--1 ==true? 0 == False?
+    is_borrowable bit,--1 ==true? 0 == False?
     borrower nvarchar,
     borrow_date date ,--DEFAULT NULL
-    type nvarchar,
+    type nvarchar(200),
     
     CONSTRAINT categoryFK FOREIGN KEY (category_id)
     REFERENCES Category (id)

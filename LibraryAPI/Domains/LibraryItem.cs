@@ -18,9 +18,8 @@ namespace LibraryAPI.Domains
 
 
 
-        public readonly int maxByteLength = HelperVariables.maxByteLength;
         ///<summary>
-        /// If unallowed for any reason it sets "Title" to null, should be checked to avoid issues.
+        /// If invalid for any reason it sets "Title" to null, should be checked to avoid issues.
         /// Will allow borrowing books from 10kbc to 10k in the future. Or something, no checks.
         ///TODO? Will not allow borrower name to be set without a borrowDate.
         /// Neighter will I controll if checkedin or out, that controll need to be made somewhere in buisness-controll, never in domain.
@@ -33,9 +32,10 @@ namespace LibraryAPI.Domains
             this.runTimeMinutes = null;
             this.pages = null;
             this.author = null;
+            Console.WriteLine("Hello type: " + type);
 
             this.title = null;//Set to null so can return without setting it several times
-            if (title == null || title.Length == 0 || title.Length > maxByteLength)
+            if (title == null || title.Length == 0 || title.Length > HelperVariables.maxByteLength)
             {
                 return;
             }
@@ -43,15 +43,28 @@ namespace LibraryAPI.Domains
             if (type == null) return;
             if (type.Equals("Book") || type.Equals("Reference Book"))
             {
-                if (type.Equals("Reference Book") && (borrower != null || borrowDate != null) || isBorrowable) { return; }
-                if (author == null || author.Length == 0 || author.Length > maxByteLength)
+                Console.WriteLine("Hello from boook");
+                if (type.Equals("Reference Book") && (borrower != null || borrowDate != null || isBorrowable))
                 {
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("Turns out me am reference book");//TODO REMOVE DEBUG
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("is type referencebook?: " + (type.Equals("Reference Book")));//TODO REMOVE DEBUG
+
                     return;
                 }
-                if (pages < 0) { return; }
+                if (author == null || author.Length == 0 || author.Length > HelperVariables.maxByteLength)
+                {
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("Hello author is fucked up: " + author);
+                    return;
+                }
+                if (pages < 0)
+                {
+                    if (HelperVariables.IS_DEBUG) Console.WriteLine("Pages is bellow 0");
+                    return;
+                }
                 //ELSE is valid:
                 this.author = author;
                 this.pages = pages;
+                if (HelperVariables.IS_DEBUG) Console.WriteLine("Hello book with title: " + title);
             }
             else if (type.Equals("DVD") || type.Equals("Audio Book"))
             {
@@ -68,7 +81,7 @@ namespace LibraryAPI.Domains
             //Better to check that in service
             if (borrowDate != null)
             {
-                if (borrower == null || borrower.Length == 0 || borrower.Length > maxByteLength) return;
+                if (borrower == null || borrower.Length == 0 || borrower.Length > HelperVariables.maxByteLength) return;
             }
             else if (borrower != null)
             {//Borrow date is null, but borrower is not
@@ -85,6 +98,7 @@ namespace LibraryAPI.Domains
             this.borrower = borrower;
             this.borrowDate = borrowDate;
             this.type = type;
+            Console.WriteLine("Hello from the booookeli domain");
         }
 
         ///<summary>
@@ -97,7 +111,7 @@ namespace LibraryAPI.Domains
 
             if (borrowDate != null)
             {
-                if (borrower == null || borrower.Length == 0 || borrower.Length > maxByteLength) return;
+                if (borrower == null || borrower.Length == 0 || borrower.Length > HelperVariables.maxByteLength) return;
             }
             else if (borrower != null)
             {//Borrow date is null, but borrower is not

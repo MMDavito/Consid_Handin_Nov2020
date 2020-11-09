@@ -1,4 +1,5 @@
 
+using System;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
@@ -20,7 +21,7 @@ namespace LibraryAPI.Services
 
         public string getAll()
         {
-            LinkedList<Category> categories = new LinkedList<Category>();
+            LinkedList<LibraryItem> items = new LinkedList<LibraryItem>();
             using (SqlConnection cnn = connectionFactory.cnn)
             {
                 cnn.Open();//Could been async, but nothing realy is.
@@ -30,20 +31,41 @@ namespace LibraryAPI.Services
                     sc.Connection = cnn;
                     sc.CommandType = CommandType.Text;
                     sc.CommandText = @"
-                    SELECT * FROM shite ORDER BY id;
+                    SELECT * FROM LibraryItem ORDER BY id;
                     ";
                     SqlDataReader reader = sc.ExecuteReader();
                     while (reader.Read())
                     {
+                        string author = null;
+                        Nullable<int> pages = null;
+                        Nullable<int> run_time_minutes = null;
+                        string borrower = null;
+                        Nullable<DateTime> borrow_date = null;
+
                         if (HelperVariables.IS_DEBUG) System.Console.WriteLine("\n");
                         int id = reader.GetInt32(0);
-                        string temp = reader.GetString(1);
-                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Name: " + temp);
-                        categories.AddLast((new Category(id, temp)));
+                        System.Console.WriteLine("HELVETE HEMTADE ID: " + id);
+                        int category_id = reader.GetInt32(1);
+                        string title = reader.GetString(2);
+                        if (!reader.IsDBNull(3)) author = reader.GetString(3);
+                        if (!reader.IsDBNull(4)) pages = reader.GetInt32(4);
+                        if (!reader.IsDBNull(5)) run_time_minutes = reader.GetInt32(5);
+                        System.Console.WriteLine("Will now get borrowable");
+                        bool is_borrowable = reader.GetBoolean(6);
+                        System.Console.WriteLine("Borrowable is: " + is_borrowable);
+
+                        if (!reader.IsDBNull(7)) borrower = reader.GetString(7);
+                        if (!reader.IsDBNull(8)) borrow_date = reader.GetDateTime(8);
+                        string type = reader.GetString(9);
+
+
+
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Title: " + title);
+                        items.AddLast((new LibraryItem(id, category_id, title, author, pages, run_time_minutes, is_borrowable, borrower, borrow_date, type)));
                     }
                     cnn.Close();
                 }
-                return JsonConvert.SerializeObject(categories);
+                return JsonConvert.SerializeObject(items);
             }
         }
 
@@ -53,37 +75,93 @@ namespace LibraryAPI.Services
         ///</summary>
         public HttpResponseMessage insert(LibraryItem lib_item)
         {
+            //Cannot add lib_items borrowed.
+            //This may be hack because i always parse the same json nomatter what
+            lib_item.borrower = null;
+            lib_item.borrowDate = null;
+            if (lib_item.type.Equals("Reference Book")) lib_item.isBorrowable = false;
+            else lib_item.isBorrowable = true;
+            //Now Insert the lib_item:
             using (SqlConnection cnn = connectionFactory.cnn)
             {
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO shite output INSERTED.ID VALUES(@bajs)", cnn))
+                using (SqlCommand sc = new SqlCommand())
                 {
                     try
                     {
+                        sc.Connection = cnn;
+                        sc.CommandType = CommandType.Text;
+                        sc.CommandText = @"
+INSERT INTO LibraryItem
+    (
+    ""category_id"",
+    ""title"",
+    ""author"",
+    ""pages"",
+    ""run_time_minutes"",
+    ""is_borrowable"",
+    ""borrower"",
+    ""borrow_date"",
+    ""type"") 
+output INSERTED.ID
+VALUES(
+    @category_id,
+    @title,
+    @author,
+    @pages,
+    @run_time_minutes,
+    @is_borrowable,
+    @borrower,
+    @borrow_date,
+    @type
+);
+                        ";
+
+
                         System.Console.WriteLine("Will insert");
-                        cmd.Parameters.AddWithValue("@bajs", HelperVariables.skit);
-                        //cmd.Parameters.AddWithValue("@occ", Mem_Occ);
+                        sc.Parameters.Add("@category_id", SqlDbType.Int);
+                        sc.Parameters["@category_id"].Value = lib_item.categoryId;
+
+                        sc.Parameters.Add("@title", SqlDbType.NVarChar);
+                        sc.Parameters["@title"].Value = lib_item.title;
+
+                        sc.Parameters.Add("@author", SqlDbType.NVarChar);
+                        sc.Parameters["@author"].IsNullable = true;
+                        sc.Parameters["@author"].Value = lib_item.author;
+
+                        sc.Parameters.Add("@pages", SqlDbType.Int);
+                        sc.Parameters["@pages"].IsNullable = true;
+                        sc.Parameters["@pages"].Value = lib_item.pages;
+
+                        sc.Parameters.Add("@run_time_minutes", SqlDbType.Int);
+                        //sc.Parameters["@run_time_minutes"].IsNullable = true;
+                        sc.Parameters["@run_time_minutes"].Value = (object)lib_item.runTimeMinutes ?? DBNull.Value;
+
+                        sc.Parameters.Add("@is_borrowable", SqlDbType.Bit);
+                        sc.Parameters["@is_borrowable"].Value = lib_item.isBorrowable;
+
+
+                        sc.Parameters.Add("@borrower", SqlDbType.NVarChar);
+                        sc.Parameters["@borrower"].IsNullable = true;
+                        sc.Parameters["@borrower"].Value = lib_item.borrower;
+
+                        sc.Parameters.Add("@borrow_date", SqlDbType.Date);
+                        sc.Parameters["@borrow_date"].IsNullable = true;
+                        sc.Parameters["@borrow_date"].Value = lib_item.borrowDate;
+
+                        sc.Parameters.Add("@type", SqlDbType.NVarChar);
+                        sc.Parameters["@type"].Value = lib_item.type;
+
+
                         cnn.Open();
 
-                        int modified = (int)cmd.ExecuteScalar();
+                        int modified = (int)sc.ExecuteScalar();
 
                         if (cnn.State == System.Data.ConnectionState.Open)
                             cnn.Close();
-                        System.Console.WriteLine("The inserted id was: " + modified);
-                        //HttpResponseMessage response = new HttpResponseMessage();
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("The inserted id was: " + modified);
                         HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.Created); ;
-                        //response.StatusCode = HttpStatusCode.Created;
-
-                        //response.ReasonPhrase = "SUCCESS";
-
-                        //response.Content = new StringContent("'id':"+modified.ToString());
-                        var JsonCustomer = JsonConvert.SerializeObject(new Category(modified, HelperVariables.skit));
-                        /*                        StringContent content = new StringContent(JsonCustomer, Encoding.UTF8, "application/json");
-
-                                                System.Console.WriteLine(response.Content.ReadAsStringAsync().Result);
-                                                System.Console.WriteLine(response.Content.Headers);
-                        */
+                        var JsonCustomer = "{\"id\":" + modified + "}";
                         response.ReasonPhrase = JsonCustomer;
-
 
                         return response;
                     }
