@@ -1,9 +1,16 @@
 <template>
     <v-container>
         <v-layout column>
-            <v-flex class="display-2 text-xs-center my-5"
+            <v-flex
+                class="display-2 text-xs-center my-5"
+                v-if="categories.length > 0 && library_items.length > 0"
                 >Should have used some sort of table, raw styleless html
                 1990</v-flex
+            >
+            <v-flex
+                class="display-2 text-xs-center my-5"
+                v-if="categories.length == 0 || library_items.length == 0"
+                >Try refreshing page, a querry for data failed </v-flex
             ><v-flex>
                 <label for="checkbox" v-if="sortByCategory"
                     >Uncheck to sort by type: </label
@@ -253,7 +260,7 @@ export default {
         },
         edit: function(clicked_id) {
             var id = this.library_items[clicked_id].id;
-            var ref = 'library_items/' + id;
+            var ref = '/library_item_edit/' + id;
             this.$router.push(ref);
         },
         getAcronym(name) {

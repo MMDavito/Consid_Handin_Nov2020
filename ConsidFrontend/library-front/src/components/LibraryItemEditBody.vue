@@ -3,7 +3,7 @@
         <form>
             <v-layout column>
                 <v-flex class="display-2 text-xs-center my-5"
-                    >To change borrowed, check out and recheck</v-flex
+                    >Please fill all fields before pressing "Create"</v-flex
                 >
                 <v-flex>
                     <div>
@@ -12,7 +12,6 @@
                             class="input"
                             id="title"
                             type="text"
-                            :value="library_item.title"
                             placeholder="Title"
                         />
                         <label for="category_select">Category: </label>
@@ -31,65 +30,58 @@
                         <label
                             for="author"
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             >Author:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             type="text"
                             id="author"
-                            :value="library_item.author"
                             placeholder="Author"
                         />
                         <label
                             for="pages"
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             >Pages:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'Book' ||
-                                    library_item.type == 'Reference Book'
+                                selected_type == 'Book' ||
+                                    selected_type == 'Reference Book'
                             "
                             type="number"
                             id="pages"
-                            :value="library_item.pages"
                             placeholder="Pages"
                             min="1"
                         />
                         <label
                             for="runTimeMinutes"
                             v-if="
-                                library_item.type == 'DVD' ||
-                                    library_item.type == 'Audio Book'
+                                selected_type == 'DVD' ||
+                                    selected_type == 'Audio Book'
                             "
                             >Length minutes:
                         </label>
                         <input
                             v-if="
-                                library_item.type == 'DVD' ||
-                                    library_item.type == 'Audio Book'
+                                selected_type == 'DVD' ||
+                                    selected_type == 'Audio Book'
                             "
                             type="number"
                             id="runTimeMinutes"
-                            :value="library_item.runTimeMinutes"
                             placeholder="Length Minutes"
                             min="1"
                         />
                         <label for="selectType">Type: </label>
-                        <select
-                            v-model="selected_type"
-                            v-on-change="changed()"
-                            id="selectType"
-                        >
+                        <select v-model="selected_type" id="selectType">
                             <option
                                 v-for="type in types"
                                 v-bind:key="type"
@@ -99,19 +91,9 @@
                             </option>
                         </select>
                         <br />
-                        <v-btn
-                            color="primary"
-                            class="update"
-                            :name="library_item.id"
-                            @click="update()"
+                        <br />
+                        <v-btn color="primary" class="update" @click="update()"
                             >Update</v-btn
-                        >
-                        <v-btn
-                            color="error"
-                            class="delete"
-                            :name="library_item.id"
-                            @click="remove()"
-                            >Delete</v-btn
                         >
                         <br />
                     </div>
@@ -126,11 +108,10 @@ export default {
     name: 'LibraryItemEditBody',
     data() {
         return {
-            library_item: {},
             selected_category: null,
             categories: [],
             types: ['Book', 'DVD', 'Audio Book', 'Reference Book'],
-            selected_type: null
+            selected_type: 'Book'
         };
     },
     mounted() {
@@ -150,6 +131,24 @@ export default {
                 this.library_item = result[0];
                 this.selected_category = this.library_item.categoryId;
                 this.selected_type = this.library_item.type;
+                this.selected_type = this.library_item.type;
+                document.getElementById(
+                    'title'
+                ).value = this.library_item.title;
+                if (
+                    this.selected_type == 'Book' ||
+                    this.selected_type == 'Reference Book'
+                ) {
+                    document.getElementById(
+                        'author'
+                    ).value = this.library_item.author;
+                    document.getElementById(
+                        'pages'
+                    ).value = this.library_item.pages;
+                } else
+                    document.getElementById(
+                        'runTimeMinutes'
+                    ).value = this.library_item.runTimeMinutes;
             })
             .catch(error => console.log('error', error));
         url = 'https://127.0.0.1:5001/category/all';
@@ -168,10 +167,12 @@ export default {
             var author = null;
             var pages = null;
             var runTimeMinutes = null;
+            //Fill the specific:
             if (
-                this.library_item.type == 'Book' ||
-                this.library_item.type == 'Reference Book'
+                this.selected_type == 'Book' ||
+                this.selected_type == 'Reference Book'
             ) {
+                //IS AUTHOR AND PAGES
                 temp = document.getElementById('author');
                 if (temp == null || temp.value.length == 0) {
                     document.getElementById('author').style.backgroundColor =
@@ -185,6 +186,7 @@ export default {
 
                 temp = document.getElementById('pages');
                 if (temp == null || temp.value <= 0) {
+                    console.log('Shite pages is fucked');
                     document.getElementById('pages').style.backgroundColor =
                         'red';
                     return;
@@ -194,40 +196,54 @@ export default {
                     ).style.backgroundColor = null;
                 pages = temp.value;
             } else if (
-                this.library_item.type == 'DVD' ||
-                this.library_item.type == 'Audio Book'
+                //Else if is runtime?
+                this.selected_type == 'DVD' ||
+                this.selected_type == 'Audio Book'
             ) {
                 temp = document.getElementById('runTimeMinutes');
-                if (runTimeMinutes <= 0) {
+                if (temp == null || temp.value <= 0) {
+                    console.log('Shise from runtime');
                     document.getElementById(
                         'runTimeMinutes'
                     ).style.backgroundColor = 'red';
                     return;
-                } else
+                } else {
+                    runTimeMinutes = temp.value;
                     document.getElementById(
                         'runTimeMinutes'
                     ).style.backgroundColor = null;
+                }
             } else {
                 alert("Can't use invalid types");
                 return;
             }
-
             //"check input" but realy just change color of input field and output info to log.
             //Possible that alert would be better, or something else, but alert is terrible when developing
             //Next time i will possibly use alert "if not HelperGlobalVariable.ISDEVELOPING is false"
 
             var myHeaders = new Headers();
             myHeaders.append('Content-Type', 'application/json');
-            this.library_item.title = title;
-            this.library_item.author = author;
-            this.library_item.pages = pages;
-            this.library_item.runTimeMinutes = runTimeMinutes;
+            var obj = {};
+            obj.title = title;
+            obj.author = author;
+            obj.pages = pages;
+            obj.runTimeMinutes = runTimeMinutes;
+            obj.type = this.selected_type;
+            obj.categoryId = this.selected_category;
+            obj.borrower = this.library_item.borrower;
+            obj.borrowDate = this.library_item.borrowDate;
+            if (obj.borrower != null || obj.borrowDate != null) {
+                alert("Can't edit borrowed items, check it out before edit");
+                return;
+            }
+            obj.isBorrowable = obj.type == 'Reference Book' ? false : true;
+
             //Borrow won't change, nore will type, since "onChange"
             //var category = null;
-            var raw = JSON.stringify(this.library_item);
-            console.log('Updated item is: ' + raw);
+            var raw = JSON.stringify(obj);
+            console.log('Item to create is: ' + raw);
             raw = JSON.stringify(raw);
-            console.log('Updated restringed item is: ' + raw);
+            console.log('Restringed item is: ' + raw);
 
             var requestOptions = {
                 method: 'PUT',
@@ -249,12 +265,13 @@ export default {
                         );
                     } else {
                         alert('WILL reroute now!');
-                        this.$router.push('library_items');
+                        this.$router.push('/library_items');
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
-        },
+        } /*
         changed: function() {
+            console.log("You preseeed changed")
             if (this.library_item.type == 'Reference Book') {
                 this.library_item.type = this.selected_type;
                 this.$set(this.library_item, 'type', this.selected_type);
@@ -274,7 +291,7 @@ export default {
             } else {
                 this.$set(this.library_item, 'type', this.selected_type);
             }
-        }
+        }*/
     }
 };
 </script>

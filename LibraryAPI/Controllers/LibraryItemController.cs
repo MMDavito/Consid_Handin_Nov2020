@@ -52,7 +52,15 @@ namespace LibraryAPI.Controllers
         [HttpPut("library_item/{id:int}")]
         public HttpResponseMessage Update(int id, [FromBody] string content)//Could return 404 and the like, but won't
         {
-            return new HttpResponseMessage(HttpStatusCode.NotImplemented);
+            LibraryItem myItem = JsonConvert.DeserializeObject<LibraryItem>(content);
+            if (myItem.title == null)
+            {
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.BadRequest);
+                string msg = "Probably failed for not being borrowable, for reason of being reference-book, or something else";
+                response.ReasonPhrase = msg;
+                return response;
+            }//Else:
+            return service.update(id, myItem);
 
         }
         ///<summary>

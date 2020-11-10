@@ -29,7 +29,7 @@ const routes = [
             import(/* webpackChunkName: "about" */ '../views/Library_Items.vue')
     },
     {
-        path: '/library_items/:id',
+        path: '/library_item_edit/:id',
         name: 'Library_ItemsEdit',
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route

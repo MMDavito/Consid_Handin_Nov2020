@@ -2,16 +2,10 @@
     <v-container>
         <v-layout column>
             <v-flex class="display-2 text-xs-center my-5"
-                >Empty placeholder before delete</v-flex
+                >Empty input-field before delete</v-flex
             >
             <v-flex>
-                <ul id="Categories">
-                    <li v-for="(c, index) in categories" :key="c.category">
-                        {{ c.category }} With id {{ c.id }} and index
-                        {{ index }}
-                    </li>
-                </ul>
-                <div v-for="(c, index) in categories" :key="c.category">
+                <div v-for="(c, index) in categories" :key="c.category" style="border-style:solid;">
                     <label>{{ c.category }}</label
                     ><br />
                     <input

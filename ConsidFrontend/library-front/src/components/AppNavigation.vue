@@ -39,7 +39,7 @@
             <v-btn
                 text
                 class="hidden-sm-and-down"
-                @click="$router.push('library_items')"
+                @click="$router.push('/library_items')"
                 >Library Items</v-btn
             >
             <v-btn
@@ -51,7 +51,7 @@
             <v-btn
                 text
                 class="hidden-sm-and-down"
-                @click="$router.push('create_library_items')"
+                @click="$router.push('/create_library_items')"
                 >Create Library Items</v-btn
             >
         </v-app-bar>

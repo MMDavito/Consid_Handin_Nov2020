@@ -165,6 +165,7 @@ export default {
             ) {
                 temp = document.getElementById('runTimeMinutes');
                 if (runTimeMinutes <= 0) {
+                    console.log('RUNTIME FAILED');
                     document.getElementById(
                         'runTimeMinutes'
                     ).style.backgroundColor = 'red';
@@ -221,32 +222,11 @@ export default {
                         );
                     } else {
                         alert('WILL reroute now!');
-                        this.$router.push('library_items');
+                        this.$router.push('/library_items');
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
-        } /*,
-        changed: function() {
-            if (this.library_item.type == 'Reference Book') {
-                this.library_item.type = this.selected_type;
-                this.$set(this.library_item, 'type', this.selected_type);
-
-                //The page count and author may be existing when going from reference book to dvd. But that's just a fun bug.
-                //#easterEgg
-                return;
-            } //else
-            else if (this.selected_type == 'Reference Book') {
-                if (this.library_item.borrower != null) {
-                    alert(
-                        'Cannot change type to reference book when the book is already borrowed, you need to check it back in first.'
-                    );
-                    this.selected_type = this.library_item.type;
-                    return;
-                } else this.$set(this.library_item, 'type', this.selected_type);
-            } else {
-                this.$set(this.library_item, 'type', this.selected_type);
-            }
-        }*/
+        } 
     }
 };
 </script>

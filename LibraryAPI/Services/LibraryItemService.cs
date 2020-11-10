@@ -457,5 +457,116 @@ VALUES(
             else
                 return new HttpResponseMessage(HttpStatusCode.OK);
         }
+        ///<summary>
+        /// The libraryItem must be borrowable both as argument and in database.
+        /// If argument is not borrowable it will return http status 400 bad request.
+        /// If the item in the database is unborrowable (or not found) it will return http status 404 not found.
+        ///</summary>
+        public HttpResponseMessage update(int id, LibraryItem libraryItem)
+        {
+            Console.WriteLine("Will now update");
+            int rowsAffected = -1;
+            //Require correct input:
+            if (libraryItem.borrower != null || libraryItem.borrowDate != null
+            || (libraryItem.type.Equals("Reference Book") && libraryItem.isBorrowable == true)
+            || libraryItem.isBorrowable == false
+            ) return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            Console.WriteLine("Will now connect");
+
+            //Else try updateing:
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    UPDATE LibraryItem SET 
+                    category_id=@category_id,
+                    title=@title,
+                    author=@author,
+                    pages=@pages,
+                    run_time_minutes=@run_time_minutes,
+                    is_borrowable = @is_borrowable,
+                    borrower = null,
+                    borrow_date = null,
+                    type=@type
+                    
+                    WHERE 
+                    id = @ID
+                    AND borrower IS NULL; 
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+                    System.Console.WriteLine("Will insert");
+
+                    sc.Parameters.Add("@category_id", SqlDbType.Int);
+                    sc.Parameters["@category_id"].Value = libraryItem.categoryId;
+
+                    sc.Parameters.Add("@title", SqlDbType.NVarChar);
+                    sc.Parameters["@title"].Value = libraryItem.title;
+
+                    sc.Parameters.Add("@author", SqlDbType.NVarChar);
+                    sc.Parameters["@author"].Value = (object)libraryItem.author ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
+
+                    sc.Parameters.Add("@pages", SqlDbType.Int);
+                    sc.Parameters["@pages"].Value = (object)libraryItem.pages ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!;
+
+                    sc.Parameters.Add("@run_time_minutes", SqlDbType.Int);
+                    sc.Parameters["@run_time_minutes"].Value = (object)libraryItem.runTimeMinutes ?? DBNull.Value;//TODO CONTINUE DOING THIS TO ALL!
+
+                    sc.Parameters.Add("@is_borrowable", SqlDbType.Bit);
+                    sc.Parameters["@is_borrowable"].Value = libraryItem.isBorrowable;
+
+                    sc.Parameters.Add("@type", SqlDbType.NVarChar);
+                    sc.Parameters["@type"].Value = libraryItem.type;
+
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {/*
+                            case 2627:
+                                return new HttpResponseMessage(HttpStatusCode.Conflict);//If duplicate.
+                            case 2628:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If invalid input/longer than 200Bytes.
+                        */
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
     }
 }
