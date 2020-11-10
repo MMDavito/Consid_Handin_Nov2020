@@ -6,13 +6,36 @@
             >
             <v-flex>
                 <ul id="LibraryItems">
-                    <li v-for="(l, index) in library_items" :key="l.title">
+                    <li v-for="(l, index) in library_items" :key="l.id">
                         {{ l.title }} With id {{ l.id }} and index:
                         {{ index }}
                     </li>
                 </ul>
-                <div v-for="(l, index) in library_items" :key="l.title">
-                    <label>{{ l.title }} ({{ l.acro }})</label><br />
+                <div></div>
+                <div v-for="(l, index) in library_items" :key="l.id">
+                    <label
+                        >id:{{ l.id }}, Title: {{ l.title }} ({{
+                            l.acro
+                        }}),</label
+                    >
+                    <label
+                        v-if="
+                            library_item.type == 'Book' ||
+                                library_item.type == 'Reference Book'
+                        "
+                        >Author: {{ l.author }}, Pages: {{ l.pages }},</label
+                    >
+                    <label
+                        v-if="
+                            library_item.type == 'DVD' ||
+                                library_item.type == 'Audio Book'
+                        "
+                        >Run time: {{ l.runTimeMinutes }},</label
+                    >
+                    <label>Type:{{ l.type }}, Category:{{categories.l.categoryId}}</label>
+
+                    <br />
+
                     <label :for="'borrower_' + index">Borrowed by: </label>
                     <input
                         class="input"
@@ -28,7 +51,7 @@
                         :id="'borrow_date_' + index"
                         type="date"
                         name="l.title"
-                        :value="l.borrow_date"
+                        :value="l.borrowDate"
                     />
                     <v-btn
                         v-if="l.type != 'Reference Book' && l.isBorrowable"
@@ -75,7 +98,7 @@ export default {
     data() {
         return {
             library_items: [],
-            pokemon: []
+            categories: {}
         };
     },
     mounted() {
@@ -92,124 +115,55 @@ export default {
 
                 this.library_items.forEach(element => {
                     element.acro = this.getAcronym(element.title);
+
+                    if (element.borrowDate != null) {
+                        element.borrowDate = element.borrowDate.split('T')[0];
+                    }
                     console.log('Element after acronyminisisis:');
                     console.log(element);
-                });
+                });/*TODO WILL NEED TO DO SO THIS GIVES CATEGORY: 
+                categories.l.categoryId 
+                It would really be easier to return it from backend, but i dont want unneccecerry verbose repetition of data from server.
+                This verbose is bad comes from programming Arduino. I will in future do verbose from backend?
+                
+                Anyways this should be faster than the loop for every library_item.
+                */
             })
             .catch(error => console.log('error', error));
     },
     methods: {
-        add: function() {
-            var input_field = document.getElementById('new_cat');
-            var newData = input_field.value;
-            if (
-                newData == null ||
-                newData == undefined ||
-                !(newData.length > 0) ||
-                newData.length > 200
-            ) {
-                console.log(
-                    'New category cannot have an empty name or a name longer than 200 bytes.\nNore can it be the same as already existing'
-                );
-                document.getElementById('new_cat').style.backgroundColor =
-                    'red';
+        remove: function(list_index) {
+            var r = confirm(
+                'Do you want to delete: ' +
+                    this.library_items[list_index].title +
+                    ', With id:' +
+                    this.library_items[list_index].id
+            );
+            if (r == false) {
+                alert('Will not remove since you canceled.');
                 return;
-            } else {
-                document.getElementById('new_cat').style.backgroundColor = null;
             }
-
-            var myHeaders = new Headers();
-            myHeaders.append('Content-Type', 'application/json');
-            var cat = { id: null, category: newData };
-            console.log('Cat: ' + cat);
-            var raw = JSON.stringify(cat);
-            console.log('raw: ' + raw);
-            raw = JSON.stringify(raw);
-
-            console.log('raw: ' + raw);
-
-            var requestOptions = {
-                method: 'POST',
-                headers: myHeaders,
-                body: raw,
-                redirect: 'follow'
-            };
-
-            fetch('https://127.0.0.1:5001/category', requestOptions)
-                .then(response => response.text())
-                .then(result => {
-                    result = JSON.parse(result);
-                    console.log(result);
-                    console.log('STATUS FAN: ' + result.statusCode);
-                    if (result.statusCode != 201) {
-                        document.getElementById(
-                            'new_cat'
-                        ).style.backgroundColor = 'red';
-                        return;
-                    } else {
-                        document.getElementById(
-                            'new_cat'
-                        ).style.backgroundColor = null;
-                        this.categories.push(cat);
-                    }
-                })
-                .catch(error => console.log('error', error));
-        },
-        remove: function(clicked_id) {
-            var input_field = document.getElementById(clicked_id);
-            console.log(input_field);
-            var newData = input_field.value;
-            console.log(newData);
-            console.log(this.categories);
-            var tempCat = this.categories[clicked_id];
-            console.log('New data: ' + newData);
-            console.log('Old data: ' + tempCat.category);
-            //"check input" but realy just change color of input field and output info to log.
-            //Possible that alert would be better, or something else, but alert is terrible when developing
-            //Next time i will possibly use alert "if not HelperGlobalVariable.ISDEVELOPING is false"
-            if (
-                newData == null ||
-                newData == undefined ||
-                newData.length != 0
-            ) {
-                alert(
-                    'To delete one must empty the textfield for the item one want to delete.\n\nThis is instead of confirmation.'
-                );
-                document.getElementById(clicked_id).style.backgroundColor =
-                    'red';
-                return;
-            } else if (tempCat.id == null) {
-                //Following is caused by lazzyness when creating .net response api:
-                document.getElementById(clicked_id).style.backgroundColor =
-                    'red';
-                alert(
-                    'You must reload page before deleteing newely created category.'
-                );
-                return;
-            } else {
-                document.getElementById(
-                    clicked_id
-                ).style.backgroundColor = null;
-            }
+            var tempId = this.library_items[list_index].id;
+            var url = 'https://127.0.0.1:5001/library_item/' + tempId;
             var requestOptions = {
                 method: 'DELETE',
                 redirect: 'follow'
             };
-            var url = 'https://127.0.0.1:5001/category/' + tempCat.id;
             fetch(url, requestOptions)
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(result => {
                     console.log(result);
-                    result = JSON.parse(result);
+                    console.log('Status var: ' + result.statusCode);
                     if (result.statusCode != 200) {
-                        document.getElementById(
-                            clicked_id
-                        ).style.backgroundColor = 'red';
+                        console.log('Failed chekin in');
+                        alert(
+                            'Failed chekin in, would give reason, but notime to translate response, and bad to give user verbose server info.'
+                        );
                     } else {
-                        this.categories.splice(clicked_id, 1);
+                        console.log();
+                        this.library_items.splice(list_index, 1);
                     }
-                })
-                .catch(error => console.log('error', error));
+                });
         },
         edit: function(clicked_id) {
             var id = this.library_items[clicked_id].id;
@@ -232,8 +186,9 @@ export default {
             var tempId = item.id;
             console.log('Item id is: ' + tempId);
             console.log('Item type is: ' + item.type);
-            console.log('Item from list type is: ' + this.library_items[list_index].type);
-
+            console.log(
+                'Item from list type is: ' + this.library_items[list_index].type
+            );
 
             var tempInput = document.getElementById('borrower_' + list_index);
             var borrower = tempInput.value;
@@ -287,20 +242,45 @@ export default {
                             'Failed chekin in, would give reason, but notime to translate response, and bad to give user verbose server info.'
                         );
                     } else {
+                        //item.borrowDate = item.borrowDate.split('T')[0];
+                        console.log(
+                            'This new have borrower?: ' + item.borrower
+                        );
+                        /*
                         this.$set(this.library_items, list_index, {
                             item
-                        });
+                        });*/
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
         },
         check_out: function(list_index) {
-            alert(
-                'Will check out: ' +
-                    list_index +
-                    '\n' +
-                    this.library_items[list_index]
-            );
+            var tempId = this.library_items[list_index].id;
+            var url = 'https://127.0.0.1:5001/library_item/check_out/' + tempId;
+            var requestOptions = {
+                method: 'PUT',
+                redirect: 'follow'
+            };
+            fetch(url, requestOptions)
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    console.log('Status var: ' + result.statusCode);
+                    if (result.statusCode != 200) {
+                        console.log('Failed chekin in');
+                        alert(
+                            'Failed chekin in, would give reason, but notime to translate response, and bad to give user verbose server info.'
+                        );
+                    } else {
+                        //item.borrowDate = item.borrowDate.split('T')[0];
+                        console.log();
+                        var item = this.library_items[list_index];
+                        item.borrower = null;
+                        item.borrowDate = null;
+                        item.isBorrowable = true;
+                        this.$set(this.library_items, list_index, item);
+                    }
+                });
         }
     }
 };
