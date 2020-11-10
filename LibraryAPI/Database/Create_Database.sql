@@ -8,12 +8,14 @@
 CREATE DATABASE library;
 --go
 use library;
-CREATE TABLE Category(
+CREATE TABLE Category
+(
     id int IDENTITY(1,1) PRIMARY KEY,
     category nvarchar(200) NOT NULL UNIQUE--100 charachter category is unheard of
-    );
+);
 --go
-CREATE TABLE LibraryItem(
+CREATE TABLE LibraryItem
+(
     id int IDENTITY(1,1) PRIMARY KEY,
     category_id int,
     title nvarchar(200),
@@ -24,20 +26,26 @@ CREATE TABLE LibraryItem(
     borrower nvarchar(200),
     borrow_date date ,--DEFAULT NULL
     type nvarchar(200),
-    
+
     CONSTRAINT categoryFK FOREIGN KEY (category_id)
     REFERENCES Category (id)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 
 );
-CREATE TABLE Employee(
+CREATE TABLE Employee
+(
     id int IDENTITY(1,1) PRIMARY KEY,
     first_name nvarchar(200),--abit long, no names are 200 bytes long, but as I understand nvarchar inserting 200 bytes in NVARCHAR(4000) will take 200bytes.
     last_name nvarchar(200),
     salary decimal,
     is_ceo bit,
     is_manager bit,
-    manager_id int --DEFAULT NULL
+    manager_id int,
+    --DEFAULT NULL
+    CONSTRAINT managedBy FOREIGN KEY (manager_id)
+    REFERENCES Employee(id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 );--Singular to stick with ONE naming convention instead of several.
 --go
