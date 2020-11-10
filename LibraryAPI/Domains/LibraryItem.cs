@@ -42,6 +42,7 @@ namespace LibraryAPI.Domains
             }
             //Switch case, check and set specific fields, return if unallowed, where Title is returned as nulll
             if (type == null) return;
+            else this.type = type;
             if (type.Equals("Book") || type.Equals("Reference Book"))
             {
                 Console.WriteLine("Hello from boook");

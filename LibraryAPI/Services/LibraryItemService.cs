@@ -58,7 +58,6 @@ namespace LibraryAPI.Services
                         if (!reader.IsDBNull(8)) borrow_date = reader.GetDateTime(8);
                         string type = reader.GetString(9);
 
-
                         string tempDate = borrow_date == null ? tempDate = null : tempDate = ((DateTime)borrow_date).ToString(HelperVariables.expectedFormat);
 
                         if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Title: " + title);
