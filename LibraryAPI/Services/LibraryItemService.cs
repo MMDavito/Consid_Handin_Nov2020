@@ -237,5 +237,225 @@ VALUES(
                 }
             }
         }
+        ///<summary>
+        /// The libraryItem must be borrowable both as argument and in database.
+        /// If argument is not borrowable it will return http status 400 bad request.
+        /// If the item in the database is unborrowable (or not found) it will return http status 404 not found.
+        ///</summary>
+        public HttpResponseMessage checkIn(int id, LibraryItem libraryItem)
+        {
+            int rowsAffected = -1;
+            if (libraryItem.isBorrowable != true || libraryItem.type == null || libraryItem.borrowDate == null || libraryItem.type.Equals("Reference Book")) return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    UPDATE LibraryItem SET 
+                    borrower = @borrower,
+                    borrow_date = @borrow_date,
+                    is_borrowable = 'false'
+
+                    WHERE 
+                    id = @ID
+                    AND is_borrowable = 'true'; 
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    sc.Parameters.Add("@borrower", SqlDbType.NVarChar);
+                    sc.Parameters["@borrower"].Value = libraryItem.borrower;
+
+                    sc.Parameters.Add("@borrow_date", SqlDbType.Date);
+                    sc.Parameters["@borrow_date"].Value = ((DateTime)libraryItem.borrowDate).ToString(HelperVariables.expectedFormat);
+
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {/*
+                            case 2627:
+                                return new HttpResponseMessage(HttpStatusCode.Conflict);//If duplicate.
+                            case 2628:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If invalid input/longer than 200Bytes.
+                        */
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
+        ///<summary>
+        /// No controll except it being reference book or not is made before setting it to borrower null, borrowdate null and isborrowable to true
+        /// 404 is returned if not found or trying to make reference book borrowable (a.k.a checkin it out)
+        ///</summary>
+        public HttpResponseMessage checkOut(int id)
+        {
+            int rowsAffected = -1;
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    UPDATE LibraryItem SET 
+                    borrower = null,
+                    borrow_date = null,
+                    is_borrowable = 'true'
+
+                    WHERE 
+                    id = @ID
+                    AND NOT type = 'Reference Book'; 
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {/*
+                            case 2627:
+                                return new HttpResponseMessage(HttpStatusCode.Conflict);//If duplicate.
+                            case 2628:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If invalid input/longer than 200Bytes.
+                        */
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+        ///<summary>
+        /// No controll made, could implement not allowing borrowed boooks to be deleted without being checked out.
+        /// Although being an good controll, I do not have time to implement it on frontend.
+        ///</summary>
+        public HttpResponseMessage delete(int id)
+        {
+            int rowsAffected = -1;
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    DELETE FROM LibraryItem 
+                    WHERE 
+                    id = @ID
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {/*
+                            case 2627:
+                                return new HttpResponseMessage(HttpStatusCode.Conflict);//If duplicate.
+                            case 2628:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If invalid input/longer than 200Bytes.
+                        */
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
     }
 }

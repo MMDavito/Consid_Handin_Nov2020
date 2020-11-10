@@ -60,16 +60,22 @@ namespace LibraryAPI.Controllers
         /// This does not however provide authorization or authentication, so it is just stupid.
         ///</summary>
         [HttpPut("library_item/check_in/{id:int}")]
-        public HttpResponseMessage CheckIn(int id, [FromBody] string content)//Could return 404 and the like, but won't
+        public HttpResponseMessage CheckIn(int id, [FromBody] string content)
         {
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Content to check in: " + content);
             LibraryItem myItem = JsonConvert.DeserializeObject<LibraryItem>(content);
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Date of checkin: " + myItem.borrowDate);
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Title of checkin: " + myItem.title);
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Title of checkin =Null?: " + myItem.title == null);
+            if (myItem.title == null)
+            {
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.BadRequest);
+                string msg = "Probably failed for not being borrowable, for reason of being reference-book, or something else";
+                response.ReasonPhrase = msg;
+                return response;
+            }
 
-
-            return new HttpResponseMessage(HttpStatusCode.NotImplemented);
+            return service.checkIn(id, myItem);
 
         }
         ///<summary>
@@ -77,15 +83,14 @@ namespace LibraryAPI.Controllers
         /// This does not however provide authorization or authentication, so it is just stupid.
         ///</summary>
         [HttpPut("library_item/check_out/{id:int}")]
-        public HttpResponseMessage CheckOut(int id, [FromBody] string content)//Could return 404 and the like, but won't
+        public HttpResponseMessage CheckOut(int id)
         {
-            return new HttpResponseMessage(HttpStatusCode.NotImplemented);
-
+            return service.checkOut(id);
         }
         [HttpDelete("library_item/{id:int}")]
-        public HttpResponseMessage Delete(int id)//Could return 404 and the like, but won't
+        public HttpResponseMessage Delete(int id)
         {
-            return new HttpResponseMessage(HttpStatusCode.NotImplemented);
+            return service.delete(id);
         }
     }
 }

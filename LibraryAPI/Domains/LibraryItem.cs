@@ -45,7 +45,6 @@ namespace LibraryAPI.Domains
             else this.type = type;
             if (type.Equals("Book") || type.Equals("Reference Book"))
             {
-                Console.WriteLine("Hello from boook");
                 if (type.Equals("Reference Book") && (borrower != null || borrowDate != null || isBorrowable))
                 {
                     if (HelperVariables.IS_DEBUG) Console.WriteLine("Turns out me am reference book");//TODO REMOVE DEBUG
@@ -60,7 +59,6 @@ namespace LibraryAPI.Domains
                 }
                 if (pages < 0)
                 {
-                    if (HelperVariables.IS_DEBUG) Console.WriteLine("Pages is bellow 0");
                     return;
                 }
                 //ELSE is valid:
@@ -72,8 +70,6 @@ namespace LibraryAPI.Domains
             {
                 if (runTimeMinutes == null || runTimeMinutes <= 0)
                 {
-                    if (HelperVariables.IS_DEBUG) Console.WriteLine("WHY DA FUCK RETURN HERE 2?");
-
                     return;
                 }
                 //ELSE IS VALID
@@ -90,13 +86,11 @@ namespace LibraryAPI.Domains
             {
                 if (borrower == null || borrower.Length == 0 || borrower.Length > HelperVariables.maxByteLength)
                 {
-                    if (HelperVariables.IS_DEBUG) Console.WriteLine("WHY DA FUCK RETURN HERE?");
                     return;
                 }
             }
             else if (borrower != null)
             {//Borrow date is null, but borrower is not
-                Console.WriteLine("Is boorowdate null?: " + (borrowDate == null));
                 if (HelperVariables.IS_DEBUG) System.Console.WriteLine("Borowdate is null, but borrower has length: " + borrower.Length);
                 return;
                 //could check length..... 
@@ -117,17 +111,12 @@ namespace LibraryAPI.Domains
                 out theDate);
             if (result)
             {
-                Console.WriteLine("I MANAGED TO GET DATED: " + theDate.ToString(HelperVariables.expectedFormat));
                 this.borrowDate = theDate;
             }
             else
             {
-                Console.WriteLine("I failed TO GET DATED");
-
                 return;
             }
-            this.type = type;
-            Console.WriteLine("Hello from the booookeli domain");
         }
 
         ///<summary>
