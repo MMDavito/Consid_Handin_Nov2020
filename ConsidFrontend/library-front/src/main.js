@@ -10,7 +10,7 @@ new Vue({
     /*The following global/sessionscoped variable is just awfull.
     Shuld use something else like vuex, but no time.*/
     data: {
-        sortByCategory: true//Else sort by type
+        sortByCategory: true //Else sort by type
     },
     router,
     store,

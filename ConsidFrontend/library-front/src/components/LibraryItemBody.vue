@@ -2,7 +2,8 @@
     <v-container>
         <v-layout column>
             <v-flex class="display-2 text-xs-center my-5"
-                >Big Title Goes Here</v-flex
+                >Should have used some sort of table, raw styleless html
+                1990</v-flex
             >
             <v-flex>
                 <ul id="LibraryItems">
@@ -12,27 +13,30 @@
                     </li>
                 </ul>
                 <div></div>
-                <div v-for="(l, index) in library_items" :key="l.id">
+                <div
+                    style="border-style:solid;"
+                    v-for="(l, index) in library_items"
+                    :key="index"
+                >
                     <label
                         >id:{{ l.id }}, Title: {{ l.title }} ({{
                             l.acro
                         }}),</label
                     >
-                    <label
-                        v-if="
-                            library_item.type == 'Book' ||
-                                library_item.type == 'Reference Book'
-                        "
+                    <label v-if="l.type == 'Book' || l.type == 'Reference Book'"
                         >Author: {{ l.author }}, Pages: {{ l.pages }},</label
                     >
-                    <label
-                        v-if="
-                            library_item.type == 'DVD' ||
-                                library_item.type == 'Audio Book'
-                        "
+                    <label v-if="l.type == 'DVD' || l.type == 'Audio Book'"
                         >Run time: {{ l.runTimeMinutes }},</label
                     >
-                    <label>Type:{{ l.type }}, Category:{{categories.l.categoryId}}</label>
+                    <label
+                        >Type:{{ l.type }}, Category:{{
+                            l.category.category
+                        }}</label
+                    >
+                    <!--<label
+                        >Type:{{ l.type }}, Category:{{ l.categoryId }}</label
+                    >!-->
 
                     <br />
 
@@ -98,7 +102,7 @@ export default {
     data() {
         return {
             library_items: [],
-            categories: {}
+            categories: []
         };
     },
     mounted() {
@@ -106,6 +110,20 @@ export default {
             method: 'GET',
             redirect: 'follow'
         };
+        //Should have used a sql join on the server, but forgot, probably since i was not involved in the databaseDesign
+        fetch('https://127.0.0.1:5001/category/all', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                this.categories = result;
+                if (this.library_items.length == 0) {
+                    console.log('Library items is null, cant change them');
+                    return;
+                }
+                //Else do
+                //this.library_items.forEach(element => {});
+            })
+            .catch(error => console.log('error', error));
 
         fetch('https://127.0.0.1:5001/library_item/all', requestOptions)
             .then(response => response.json())
@@ -114,6 +132,30 @@ export default {
                 this.library_items = result;
 
                 this.library_items.forEach(element => {
+                    console.log(
+                        'Element has categoryId: ' + element.categoryId
+                    );
+                    if (this.categories.length == 0) {
+                        console.log(
+                            'Categories is null, cant querrry for them, try refresh page'
+                        );
+                        return;
+                    }
+                    var tempCat = this.categories.find(
+                        category => category.id == element.categoryId
+                    ); //Time complexity would be lower if returned an joined result from database or used hashset here
+                    console.log(
+                        'Element ' +
+                            element.title +
+                            ', Has category: ' +
+                            tempCat.category
+                    );
+                    element.category = tempCat;
+                    console.log(
+                        'Element now have category: ' +
+                            element.category.category
+                    );
+
                     element.acro = this.getAcronym(element.title);
 
                     if (element.borrowDate != null) {
@@ -121,15 +163,41 @@ export default {
                     }
                     console.log('Element after acronyminisisis:');
                     console.log(element);
-                });/*TODO WILL NEED TO DO SO THIS GIVES CATEGORY: 
-                categories.l.categoryId 
-                It would really be easier to return it from backend, but i dont want unneccecerry verbose repetition of data from server.
-                This verbose is bad comes from programming Arduino. I will in future do verbose from backend?
-                
-                Anyways this should be faster than the loop for every library_item.
-                */
+                });
             })
             .catch(error => console.log('error', error));
+        /* //Should have used a sql join on the server, but forgot, probably since i was not involved in the databaseDesign
+        fetch('https://127.0.0.1:5001/category/all', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                this.categories = result;
+                if (this.library_items.length == 0) {
+                    console.log('Library items is null, cant change them');
+                    return;
+                }
+                //Else do
+                this.library_items.forEach(element => {
+                    console.log(
+                        'Element has categoryId: ' + element.categoryId
+                    );
+                    var tempCat = this.categories.find(
+                        category => category.id == element.categoryId
+                    ); //Time complexity would be lower if returned an joined result from database or used hashset here
+                    console.log(
+                        'Element ' +
+                            element.title +
+                            ', Has category: ' +
+                            tempCat.category
+                    );
+                    element.category = tempCat;
+                    console.log(
+                        'Element now have category: ' +
+                            element.category.category
+                    );
+                });
+            })
+            .catch(error => console.log('error', error));*/
     },
     methods: {
         remove: function(list_index) {
