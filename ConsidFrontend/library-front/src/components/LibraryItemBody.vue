@@ -4,15 +4,19 @@
             <v-flex class="display-2 text-xs-center my-5"
                 >Should have used some sort of table, raw styleless html
                 1990</v-flex
-            >
+            ><v-flex>
+                <label for="checkbox" v-if="sortByCategory"
+                    >Uncheck to sort by type: </label
+                ><label for="checkbox" v-if="!sortByCategory"
+                    >Check to sort by category: </label
+                ><input
+                    @change="changed"
+                    type="checkbox"
+                    id="checkbox"
+                    v-model="sortByCategory"
+                />
+            </v-flex>
             <v-flex>
-                <ul id="LibraryItems">
-                    <li v-for="(l, index) in library_items" :key="l.id">
-                        {{ l.title }} With id {{ l.id }} and index:
-                        {{ index }}
-                    </li>
-                </ul>
-                <div></div>
                 <div
                     style="border-style:solid;"
                     v-for="(l, index) in library_items"
@@ -102,7 +106,8 @@ export default {
     data() {
         return {
             library_items: [],
-            categories: []
+            categories: [],
+            sortByCategory: true //Should check if browser allows and have value, but NO TIME
         };
     },
     mounted() {
@@ -164,6 +169,19 @@ export default {
                     console.log('Element after acronyminisisis:');
                     console.log(element);
                 });
+
+                console.log(
+                    'Should i sort by category?: ' + this.sortByCategory
+                );
+                var sortBol =
+                    sessionStorage.isCategorySort == 'true' ? true : false;
+                this.$set(this, 'sortByCategory', sortBol);
+                //this.sortByCategory=sortBol;
+                if (this.sortByCategory) {
+                    this.library_items.sort(this.compare_categories);
+                } else {
+                    this.library_items.sort(this.compare_types);
+                }
             })
             .catch(error => console.log('error', error));
         /* //Should have used a sql join on the server, but forgot, probably since i was not involved in the databaseDesign
@@ -314,10 +332,6 @@ export default {
                         console.log(
                             'This new have borrower?: ' + item.borrower
                         );
-                        /*
-                        this.$set(this.library_items, list_index, {
-                            item
-                        });*/
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
@@ -349,6 +363,57 @@ export default {
                         this.$set(this.library_items, list_index, item);
                     }
                 });
+        },
+        compare_categories: function(a, b) {
+            if (a.category.category < b.category.category) {
+                return -1;
+            }
+            if (a.category.category > b.category.category) {
+                return 1;
+            }
+            return this.compare_id_reverse(b, a);
+        },
+        compare_types: function(a, b) {
+            if (a.type < b.type) {
+                return -1;
+            }
+            if (a.type > b.type) {
+                return 1;
+            }
+            return this.compare_id_reverse(b, a);
+        },
+        compare_id_reverse: function(b, a) {
+            if (a.id < b.id) {
+                return -1;
+            }
+            if (a.id > b.id) {
+                return 1;
+            }
+            return this.compare_name(b, a);
+        },
+        compare_title: function(a, b) {
+            if (a.title < b.title) {
+                return -1;
+            }
+            if (a.title > b.title) {
+                return 1;
+            }
+            return 0;
+        },
+        changed: function() {
+            //var temp = sessionStorage.getItem('isCategorySort');
+            var sortBol = true;
+            console.log('Session: ' + sessionStorage.isCategorySort);
+            if (sessionStorage.isCategorySort == 'true') {
+                sessionStorage.isCategorySort = 'false';
+                sortBol = false;
+                this.library_items.sort(this.compare_types);
+            } else {
+                sessionStorage.isCategorySort = 'true';
+                sortBol = true;
+                this.library_items.sort(this.compare_categories);
+            }
+            this.$set(this, 'sortByCategory', sortBol);
         }
     }
 };

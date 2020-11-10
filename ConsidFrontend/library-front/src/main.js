@@ -6,12 +6,12 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false;
 
+/*The following global/sessionscoped variable is just awfull.
+Shuld use something else like vuex, but no time.*/
+//Vue.prototype.$sortByCategory = true; //Else sort by type
+window.sessionStorage.setItem("isCategorySort",true);
+
 new Vue({
-    /*The following global/sessionscoped variable is just awfull.
-    Shuld use something else like vuex, but no time.*/
-    data: {
-        sortByCategory: true //Else sort by type
-    },
     router,
     store,
     vuetify,
