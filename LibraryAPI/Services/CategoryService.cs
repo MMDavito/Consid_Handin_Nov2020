@@ -54,7 +54,6 @@ namespace LibraryAPI.Services
             using (SqlConnection cnn = connectionFactory.cnn)
             {
                 cnn.Open();//Could been async, but nothing realy is.
-                           //should TODO add trycatchy thingy.
                 using (SqlCommand sc = new SqlCommand())
                 {
                     sc.Connection = cnn;
@@ -65,7 +64,6 @@ namespace LibraryAPI.Services
                     sc.Parameters.Add("@category", SqlDbType.NVarChar);
                     sc.Parameters["@category"].Value = category.category;
 
-                    //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
                         sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
@@ -77,7 +75,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -117,7 +114,6 @@ namespace LibraryAPI.Services
                     sc.Parameters.Add("@category", SqlDbType.NVarChar);
                     sc.Parameters["@category"].Value = category.category;
 
-                    //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
                         rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
@@ -130,7 +126,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("SQLException occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -149,7 +144,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }
@@ -211,7 +205,6 @@ namespace LibraryAPI.Services
                     sc.Parameters.Add("@ID", SqlDbType.Int);
                     sc.Parameters["@ID"].Value = id;
 
-                    //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
                         rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
@@ -224,7 +217,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("SQLException occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -239,7 +231,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in category service when deleteing stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }

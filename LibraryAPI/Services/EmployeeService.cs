@@ -180,7 +180,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in employee service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -280,7 +279,6 @@ namespace LibraryAPI.Services
                     sc.Parameters.AddWithValue("@last_name", employee.lastName);
                     sc.Parameters.AddWithValue("@salary", employee.salary);
                     sc.Parameters.AddWithValue("@manager_id", (object)employee.managerId ?? DBNull.Value);//Should have added an if is ceo and skipped, but wanted same format as the insert
-                    //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
                         rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
@@ -293,7 +291,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("SQLException occured in employee service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -312,7 +309,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in employee service when putting/updating stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }
@@ -412,7 +408,6 @@ namespace LibraryAPI.Services
                     sc.Parameters.Add("@ID", SqlDbType.Int);
                     sc.Parameters["@ID"].Value = id;
 
-                    //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
                         rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
@@ -425,7 +420,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("SQLException occured in employee service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -440,7 +434,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in employee service when deleteing stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }
@@ -469,7 +462,7 @@ namespace LibraryAPI.Services
                     sc.Connection = cnn;
                     sc.CommandType = CommandType.Text;
                     sc.CommandText = @"
-                    DELETE FROM Employee WHERE managed_by = @ID;
+                    DELETE FROM Employee WHERE ""manager_id"" = @ID;
                     ";
                     sc.Parameters.Add("@ID", SqlDbType.Int);
                     sc.Parameters["@ID"].Value = id;
@@ -487,7 +480,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("SQLException occured in employee service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {
@@ -502,7 +494,6 @@ namespace LibraryAPI.Services
                         {
                             System.Console.WriteLine("Exception occured in employee service when deleteing stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }

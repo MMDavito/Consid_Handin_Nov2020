@@ -135,10 +135,9 @@ export default {
                 return;
             } //else:
             var id = this.selected[0].id;
-            alert('WILL NEED TO REMOVE RETURN BEFORE REROUTE TO ID: ' + id);
 
-            //var ref = '/library_item_edit/' + id;
-            //this.$router.push(ref);
+            var ref = '/employee_edit/' + id;
+            this.$router.push(ref);
         }
     }
 };

@@ -285,7 +285,6 @@ VALUES(
                         {
                             System.Console.WriteLine("SQLException occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {/*
@@ -358,7 +357,6 @@ VALUES(
                         {
                             System.Console.WriteLine("SQLException occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {/*
@@ -535,7 +533,6 @@ VALUES(
                         {
                             System.Console.WriteLine("SQLException occured in category service");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         switch (e.Number)
                         {/*
@@ -555,7 +552,6 @@ VALUES(
                         {
                             System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
                             System.Console.WriteLine(e);
-                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
                         return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
                     }

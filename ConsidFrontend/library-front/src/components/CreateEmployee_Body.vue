@@ -7,58 +7,66 @@
                 >
                 <v-flex>
                     <div>
-                        <label for="first_name">First name: </label>
+                        <label for="firstName">First name: </label>
                         <input
                             class="input"
-                            id="first_name"
+                            id="firstName"
                             type="text"
-                            v-model="employee.first_name"
+                            v-model="employee.firstName"
                             placeholder="First Name"
                         />
-                        <label for="last_name">Last name: </label>
+                        <label for="lastName">Last name: </label>
                         <input
                             class="input"
-                            id="last_name"
+                            id="lastName"
                             type="text"
-                            v-model="employee.last_name"
+                            v-model="employee.lastName"
                             placeholder="Last Name"
                         /><br />
                         <label for="employee_type">Type of employee: </label>
-                        <select v-model="selected_type" id="employee_type">
+                        <select
+                            v-model="selected_type"
+                            id="employee_type"
+                            style="border-style:solid;"
+                        >
                             <option
-                                v-for="(eT,index) in employee_types"
+                                v-for="eT in employee_types"
                                 v-bind:key="eT"
-                                v-bind:value="index"
+                                v-bind:value="eT"
                             >
                                 {{ eT }}
                             </option>
                         </select>
-
-                        <label for="manager_id" v-if="employee_type != 'CEO'"
-                            >Type of employee:
+                        <br />
+                        <label for="managerId" v-if="selected_type != 'CEO'"
+                            >Is managed by (last option is managed by none):
                         </label>
                         <select
-                            v-model="employee.manager_id"
-                            id="manager_id"
-                            v-if="employee_type != 'CEO'"
+                            v-model="employee.managerId"
+                            id="managerId"
+                            v-if="selected_type != 'CEO'"
+                            style="border-style:solid;"
                         >
                             <option
-                                v-for="employee in managers"
-                                v-bind:key="employee.id"
-                                v-bind:value="employee.id"
+                                v-for="tE in managers"
+                                v-bind:key="tE.id"
+                                v-bind:value="tE.id"
                             >
-                                {{ employee.manager_id }}
+                                {{ tE.firstName }}
                             </option>
                         </select>
-                        <br>
+                        <br />
 
-                        <label for="rank">Rank of employee</label>
+                        <label for="rank"
+                            >Rank of employee (in range: [1,10]):
+                        </label>
                         <input
                             id="rank"
                             type="number"
                             min="1"
                             max="10"
                             v-model="employee.rank"
+                            style="border-style:solid;"
                         />
 
                         <br />
@@ -81,8 +89,13 @@ export default {
             selected_type: 'Employee',
             employee_types: ['Employee', 'Manager', 'CEO'],
             managers: [],
-            employee: {},
-            manager_id: null
+            employee: {
+                firstName: '',
+                lastName: '',
+                rank: 1,
+                managerId: null
+            },
+            managerId: null
         };
     },
     mounted() {
@@ -90,7 +103,7 @@ export default {
             method: 'GET',
             redirect: 'follow'
         };
-        var url = 'https://127.0.0.1:5001/employees/all';
+        var url = 'https://127.0.0.1:5001/employee/all';
         fetch(url, requestOptions)
             .then(response => response.json())
             .then(result => {
@@ -98,81 +111,51 @@ export default {
                 this.managers = result.filter(
                     employee => employee.isCEO || employee.isManager
                 );
+                this.managers.push({});
+                console.log('MANAGERS: ');
+                console.log(this.managers);
             })
             .catch(error => console.log('error', error));
     },
     methods: {
         create: function() {
-            var temp = document.getElementById('title');
-            var title = temp == null ? null : temp.value;
-            var author = null;
-            var pages = null;
-            var runTimeMinutes = null;
             if (
-                this.selected_type == 'Book' ||
-                this.selected_type == 'Reference Book'
+                this.employee.rank == null ||
+                this.employee.rank < 1 ||
+                this.employee.rank > 10
             ) {
-                temp = document.getElementById('author');
-                if (temp == null || temp.value.length == 0) {
-                    document.getElementById('author').style.backgroundColor =
-                        'red';
-                    return;
-                } else
-                    document.getElementById(
-                        'author'
-                    ).style.backgroundColor = null;
-                author = temp.value;
+                document.getElementById('rank').style.backgroundColor = 'red';
+                return;
+            } else document.getElementById('rank').style.backgroundColor = null;
 
-                temp = document.getElementById('pages');
-                if (temp == null || temp.value <= 0) {
-                    document.getElementById('pages').style.backgroundColor =
-                        'red';
-                    return;
-                } else
-                    document.getElementById(
-                        'pages'
-                    ).style.backgroundColor = null;
-                pages = temp.value;
-            } else if (
-                this.selected_type == 'DVD' ||
-                this.selected_type == 'Audio Book'
+            console.log('managerid:' + this.employee.managerId);
+            if (
+                this.selected_type == 'Employee' &&
+                this.employee.managerId == null
             ) {
-                temp = document.getElementById('runTimeMinutes');
-                if (runTimeMinutes <= 0) {
-                    console.log('RUNTIME FAILED');
-                    document.getElementById(
-                        'runTimeMinutes'
-                    ).style.backgroundColor = 'red';
-                    return;
-                } else
-                    document.getElementById(
-                        'runTimeMinutes'
-                    ).style.backgroundColor = null;
-            } else {
-                alert("Can't use invalid types");
+                alert('Employee must have a manager');
                 return;
             }
+            console.log('First name: ' + this.employee.firstName);
+            console.log('last name: ' + this.employee.lastName);
+            console.log('First name length: ' + this.employee.firstName.length);
+            console.log('last name length: ' + this.employee.lastName.length);
 
-            //"check input" but realy just change color of input field and output info to log.
-            //Possible that alert would be better, or something else, but alert is terrible when developing
-            //Next time i will possibly use alert "if not HelperGlobalVariable.ISDEVELOPING is false"
+            if (
+                this.employee.firstName.length == 0 ||
+                this.employee.lastName.length == 0
+            ) {
+                alert('Employee must have a first and last name');
+                return;
+            }
+            console.log('JAG ÄR EJ FÖRTVIVLAD');
+            this.employee.isCEO = this.selected_type == 'CEO';
+            this.employee.isManager = this.selected_type == 'Manager';
 
+            //Now try to post:
             var myHeaders = new Headers();
             myHeaders.append('Content-Type', 'application/json');
-            var obj = {};
-            obj.title = title;
-            obj.author = author;
-            obj.pages = pages;
-            obj.runTimeMinutes = runTimeMinutes;
-            obj.type = this.selected_type;
-            obj.categoryId = this.selected_category;
-            obj.borrower = null;
-            obj.borrowDate = null;
-            obj.isBorrowable = obj.type == 'Reference Book' ? false : true;
-
-            //Borrow won't change, nore will type, since "onChange"
-            //var category = null;
-            var raw = JSON.stringify(obj);
+            var raw = JSON.stringify(this.employee);
             console.log('Item to create is: ' + raw);
             raw = JSON.stringify(raw);
             console.log('Restringed item is: ' + raw);
@@ -183,7 +166,7 @@ export default {
                 body: raw,
                 redirect: 'follow'
             };
-            var url = 'https://127.0.0.1:5001/library_item/';
+            var url = 'https://127.0.0.1:5001/employee/';
             fetch(url, requestOptions)
                 .then(response => response.json())
                 .then(result => {
@@ -191,12 +174,11 @@ export default {
                     console.log('Status var: ' + result.statusCode);
                     if (result.statusCode != 201) {
                         console.log('Will change colur');
-                        alert(
-                            'Failed updateing: Possibly will print error, but probably not, possibly to long input.\nOr lacking correct category'
-                        );
+                        alert('Failed createing');
+                        return;
                     } else {
                         alert('WILL reroute now!');
-                        this.$router.push('/library_items');
+                        this.$router.push('/employees');
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));

@@ -218,7 +218,7 @@ export default {
                     if (result.statusCode != 201) {
                         console.log('Will change colur');
                         alert(
-                            'Failed updateing: Possibly will print error, but probably not, possibly to long input.\nOr lacking correct category'
+                            'Failed creating: Possibly will print error, but probably not, possibly to long input.\nOr lacking correct category'
                         );
                     } else {
                         alert('WILL reroute now!');

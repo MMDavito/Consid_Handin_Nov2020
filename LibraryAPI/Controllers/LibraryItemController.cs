@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Data.SqlClient;//4 hours wasted thinking it was "System" instead of "Microsoft"
 using LibraryAPI.Services;
 using LibraryAPI.Domains;
 using System.Net.Http;

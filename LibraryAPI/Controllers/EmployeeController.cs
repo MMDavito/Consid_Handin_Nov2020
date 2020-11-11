@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Data.SqlClient;//4 hours wasted thinking it was "System" instead of "Microsoft"
 using LibraryAPI.Services;
 using LibraryAPI.Domains;
 using System.Net.Http;
@@ -32,7 +27,6 @@ namespace LibraryAPI.Controllers
 
         [HttpPost("/employee")]
         public HttpResponseMessage CreateEmployee([FromBody] string content)
-        //        public HttpResponseMessage CreateCategory([FromBody] Category myCategory)
 
         {
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Employee to create");
@@ -58,10 +52,6 @@ namespace LibraryAPI.Controllers
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myEmployee);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myEmployee.firstName);
             return service.insert(myEmployee);
-            //            return service.insert(myEmployee);
-
-            //return new HttpResponseMessage((HttpStatusCode)418);
-            //return request.CreateResponse(HttpStatusCode.OK, user);
         }
         [HttpPut("employee/{id:int}")]
         public HttpResponseMessage UpdateCategory(int id, [FromBody] string content)//Could return 404 and the like, but won't

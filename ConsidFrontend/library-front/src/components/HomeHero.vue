@@ -10,7 +10,7 @@
                 For all possible needs
             </div>
             <div class="display-1 font-weight-bold white--text text-xs-center">
-                Place-holder. Lorem ipsimus or sumething.
+                Also serves food (obs soylent greened employees):
             </div>
             <!--
             <v-btn fab class="mt-5 brown darken-4">

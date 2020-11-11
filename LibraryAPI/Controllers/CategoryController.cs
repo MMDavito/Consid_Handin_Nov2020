@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Data.SqlClient;//4 hours wasted thinking it was "System" instead of "Microsoft"
 using LibraryAPI.Services;
 using LibraryAPI.Domains;
 using System.Net.Http;
-using System.Net;
 using Newtonsoft.Json;
 
 
@@ -32,7 +26,6 @@ namespace LibraryAPI.Controllers
 
         [HttpPost("/category")]
         public HttpResponseMessage CreateCategory([FromBody] string content)
-        //        public HttpResponseMessage CreateCategory([FromBody] Category myCategory)
 
         {
             Console.WriteLine("HEJJE");
@@ -46,8 +39,6 @@ namespace LibraryAPI.Controllers
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory.category);
 
             return service.insert(myCategory);
-            //return new HttpResponseMessage((HttpStatusCode)418);
-            //return request.CreateResponse(HttpStatusCode.OK, user);
         }
         [HttpPut("category/{id:int}")]
         public HttpResponseMessage UpdateCategory(int id, [FromBody] string content)//Could return 404 and the like, but won't
