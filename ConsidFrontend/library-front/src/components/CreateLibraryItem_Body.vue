@@ -226,7 +226,7 @@ export default {
                     }
                 })
                 .catch(error => console.log('HELVETES ERROR SKIT', error));
-        } 
+        }
     }
 };
 </script>

@@ -17,11 +17,6 @@
                         <v-btn text @click="$router.push(item.onclick)">{{
                             item.title
                         }}</v-btn>
-                        <!--
-                        <v-list-item-content>
-                            {{ item.title }}
-                        </v-list-item-content>
-                        !-->
                     </v-list-item>
                     <v-divider :key="`divider-${index}`"></v-divider>
                 </template>
@@ -54,6 +49,13 @@
                 @click="$router.push('/create_library_items')"
                 >Create Library Items</v-btn
             >
+
+            <v-btn
+                text
+                class="hidden-sm-and-down"
+                @click="$router.push('/employees')"
+                >Employees</v-btn
+            >
         </v-app-bar>
     </span>
 </template>
@@ -67,14 +69,18 @@ export default {
             drawer: false,
             items: [
                 { title: 'Home', onclick: '/' },
-                { title: 'Library Item', onclick: 'library_items' },
+                { title: 'Library Item', onclick: '/library_items' },
                 {
                     title: 'Categories',
-                    onclick: 'categories'
+                    onclick: '/categories'
                 },
                 {
                     title: 'Create Library Item',
-                    onclick: 'create_library_items'
+                    onclick: '/create_library_items'
+                },
+                {
+                    title: 'Employees',
+                    onclick: '/employees'
                 }
             ]
         };

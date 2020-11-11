@@ -5,7 +5,11 @@
                 >Empty input-field before delete</v-flex
             >
             <v-flex>
-                <div v-for="(c, index) in categories" :key="c.category" style="border-style:solid;">
+                <div
+                    v-for="(c, index) in categories"
+                    :key="c.category"
+                    style="border-style:solid;"
+                >
                     <label>{{ c.category }}</label
                     ><br />
                     <input
