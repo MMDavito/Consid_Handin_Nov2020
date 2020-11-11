@@ -56,6 +56,13 @@
                 @click="$router.push('/employees')"
                 >Employees</v-btn
             >
+            <v-btn
+                text
+                class="hidden-sm-and-down"
+                @click="$router.push('/create_employee')"
+            >
+                Create Employee</v-btn
+            >
         </v-app-bar>
     </span>
 </template>
@@ -81,6 +88,10 @@ export default {
                 {
                     title: 'Employees',
                     onclick: '/employees'
+                },
+                {
+                    title: 'Create Employee',
+                    onclick: '/create_employee'
                 }
             ]
         };
