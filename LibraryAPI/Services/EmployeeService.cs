@@ -101,8 +101,9 @@ namespace LibraryAPI.Services
                         )> 0;
                     ";
                     }
-                    else
-                    {
+
+                    else if (employee.isManager)
+                    {//Cannot allow manager to be managed by employee, but it can however be without manager.
                         sc.CommandText = @"
                     INSERT INTO Employee(
                         ""first_name"",
@@ -111,14 +112,42 @@ namespace LibraryAPI.Services
                         ""is_ceo"",
                         ""is_manager"",
                         ""manager_id"")
-                    VALUES(
+                    SELECT
                         @first_name, 
                         @last_name, 
                         @salary, 
                         @is_ceo, 
                         @is_manager, 
                         @manager_id
-                        );
+                    WHERE NOT
+                        (SELECT COUNT(e.id)
+                            FROM Employee as e WHERE e.id=@manager_id 
+                            AND (e.is_manager=0 AND e.is_ceo=0)
+                        )> 0;
+";//Where not regular employee (employee.isCeo ==false && employee.isManager == false), it should however allow manager_ID=null
+                    }
+                    else
+                    {//Employee cant be managed by ceo
+                        sc.CommandText = @"
+                    INSERT INTO Employee(
+                        ""first_name"",
+                        ""last_name"",
+                        ""salary"",
+                        ""is_ceo"",
+                        ""is_manager"",
+                        ""manager_id"")
+                    SELECT
+                        @first_name, 
+                        @last_name, 
+                        @salary, 
+                        @is_ceo, 
+                        @is_manager, 
+                        @manager_id
+                    WHERE
+                        (SELECT COUNT(e.id)
+                            FROM Employee as e WHERE e.id=@manager_id 
+                            AND (e.is_manager=1)
+                        )> 0;
                     ";
                     }
                     try
@@ -129,11 +158,12 @@ namespace LibraryAPI.Services
                         sc.Parameters.AddWithValue("@salary", employee.salary);
                         sc.Parameters.AddWithValue("@is_ceo", employee.isCEO);
                         sc.Parameters.AddWithValue("@is_manager", employee.isManager);
-                        sc.Parameters.AddWithValue("@manager_id", employee.managerId);
+                        sc.Parameters.AddWithValue("@manager_id", (object)employee.managerId ?? DBNull.Value);
 
                     }
                     catch (System.Exception e)
-                    {cnn.Close();
+                    {
+                        cnn.Close();
                         if (HelperVariables.IS_DEBUG) { Console.WriteLine("SHITE EXCEPTION HAPPENED:\n" + e); }
                         return new HttpResponseMessage(HttpStatusCode.InternalServerError);
                     }
@@ -147,7 +177,7 @@ namespace LibraryAPI.Services
                         cnn.Close();
                         if (HelperVariables.IS_DEBUG)
                         {
-                            System.Console.WriteLine("Exception occured in category service");
+                            System.Console.WriteLine("Exception occured in employee service");
                             System.Console.WriteLine(e);
                             //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
@@ -203,7 +233,7 @@ namespace LibraryAPI.Services
                         cnn.Close();
                         if (HelperVariables.IS_DEBUG)
                         {
-                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine("SQLException occured in employee service");
                             System.Console.WriteLine(e);
                             //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
@@ -222,7 +252,7 @@ namespace LibraryAPI.Services
                         cnn.Close();
                         if (HelperVariables.IS_DEBUG)
                         {
-                            System.Console.WriteLine("Exception occured in category service when putting/updating stuff");
+                            System.Console.WriteLine("Exception occured in employee service when putting/updating stuff");
                             System.Console.WriteLine(e);
                             //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
@@ -297,7 +327,7 @@ namespace LibraryAPI.Services
                         cnn.Close();
                         if (HelperVariables.IS_DEBUG)
                         {
-                            System.Console.WriteLine("SQLException occured in category service");
+                            System.Console.WriteLine("SQLException occured in employee service");
                             System.Console.WriteLine(e);
                             //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }
@@ -312,7 +342,7 @@ namespace LibraryAPI.Services
                         cnn.Close();
                         if (HelperVariables.IS_DEBUG)
                         {
-                            System.Console.WriteLine("Exception occured in category service when deleteing stuff");
+                            System.Console.WriteLine("Exception occured in employee service when deleteing stuff");
                             System.Console.WriteLine(e);
                             //return new HttpResponseMessage(HttpStatusCode.BadRequest);
                         }

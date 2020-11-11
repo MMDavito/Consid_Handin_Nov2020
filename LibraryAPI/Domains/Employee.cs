@@ -19,7 +19,25 @@ namespace LibraryAPI.Domains
         ///<summary>
         public Employee(Nullable<int> id, string firstName, string lastName, Decimal salary, bool isCEO, bool isManager, Nullable<int> managerId, Nullable<int> rank)
         {
-            if ((managerId != null && isCEO) || managerId == id) return;//Would be cool to manage yourself, but abit too exiting for deadline without tests
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Tryin to add employee: " + firstName);
+            if (rank != null && (rank < 1 || rank > 10))
+            {
+                if (HelperVariables.IS_DEBUG) Console.WriteLine("Failed tryin to add employee, can't be employeed without manager: " + firstName);
+                return;//Would be cool to be manager of yourself, but abit too exiting for deadline without tests
+            }
+
+            if (!isCEO && !isManager && (managerId == null))
+            {
+                if (HelperVariables.IS_DEBUG) Console.WriteLine("Failed tryin to add employee, can't be employeed without manager: " + firstName);
+                return;//Would be cool to be manager of yourself, but abit too exiting for deadline without tests
+            }
+
+            if (managerId != null && (isCEO || managerId == id))
+            {
+                if (HelperVariables.IS_DEBUG) Console.WriteLine("Failed tryin to add employee because ceo can't be managed, or somebody trying to self-manage: " + firstName);
+                return;//Would be cool to be manager of yourself, but abit too exiting for deadline without tests
+            }
+
             this.id = id;
             this.firstName = firstName;
             this.lastName = lastName;
@@ -28,7 +46,11 @@ namespace LibraryAPI.Domains
             this.isManager = isManager;
             this.managerId = managerId;
             this.rank = rank;
-
+            if (rank == null && salary > 0)
+            {
+                this.rank = (int)(salary / salaryCoefficient());//This is terrible design, still don't understand why not place the rank and get the salary by a view or something.
+                //It is included to help the frontend.
+            }
         }
         ///Should be in database, or anything else so server restart is not needed when changeing company policy:
         public Decimal salaryCoefficient()
@@ -49,6 +71,8 @@ namespace LibraryAPI.Domains
         }
         public Decimal calculateSalary()
         {//TODO FIND ERROR HERE:
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Rank is: " + rank);
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Coeff is: " + salaryCoefficient());
             return (salaryCoefficient() * ((Decimal)rank));
         }
     }

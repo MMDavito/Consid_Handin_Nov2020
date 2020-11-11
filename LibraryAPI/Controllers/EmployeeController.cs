@@ -38,9 +38,14 @@ namespace LibraryAPI.Controllers
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Employee to create");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(content);
             Employee myEmployee = null;
+
+            myEmployee = JsonConvert.DeserializeObject<Employee>(content);
+            if (myEmployee.firstName == null) return new HttpResponseMessage(HttpStatusCode.BadRequest);//Something failed (eighter shit from frontend, or managerid existant on an ceo)
+
             try
             {
-                myEmployee = JsonConvert.DeserializeObject<Employee>(content);
+                myEmployee.salary = myEmployee.calculateSalary();
+                Console.WriteLine("This is a salary: " + myEmployee.salary);
 
             }
             catch (System.Exception e)
@@ -49,12 +54,9 @@ namespace LibraryAPI.Controllers
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
 
-            myEmployee.salary = myEmployee.calculateSalary();
-
             if (HelperVariables.IS_DEBUG) Console.WriteLine("Employee to create");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myEmployee);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myEmployee.firstName);
-            if (myEmployee.firstName == null) return new HttpResponseMessage(HttpStatusCode.BadRequest);//Something failed (eighter shit from frontend, or managerid existant on an ceo)
             return service.insert(myEmployee);
             //            return service.insert(myEmployee);
 
@@ -65,13 +67,13 @@ namespace LibraryAPI.Controllers
         public HttpResponseMessage UpdateCategory(int id, [FromBody] string content)//Could return 404 and the like, but won't
         {
             Console.WriteLine("HEJJE");
-            if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to update:");
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Employee to update:");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(id);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(content);
 
             Category myCategory = JsonConvert.DeserializeObject<Category>(content);
 
-            if (HelperVariables.IS_DEBUG) Console.WriteLine("Category to update:");
+            if (HelperVariables.IS_DEBUG) Console.WriteLine("Employee to update:");
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory);
             if (HelperVariables.IS_DEBUG) Console.WriteLine(myCategory.category);
 

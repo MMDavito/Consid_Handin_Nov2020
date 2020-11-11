@@ -38,7 +38,7 @@ CREATE TABLE Employee
     id int IDENTITY(1,1) PRIMARY KEY,
     first_name nvarchar(200),--abit long, no names are 200 bytes long, but as I understand nvarchar inserting 200 bytes in NVARCHAR(4000) will take 200bytes.
     last_name nvarchar(200),
-    salary decimal,
+    salary decimal(20,5),--Takes 9 bytes, compared to storring the rank (smallint = 1 byte)
     is_ceo bit,
     is_manager bit,
     manager_id int,
