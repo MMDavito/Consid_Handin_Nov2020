@@ -94,7 +94,7 @@ namespace LibraryAPI.Services
             }
             return new HttpResponseMessage(HttpStatusCode.Created);
         }
-        ///<summary>Updates category with given id, catches long input, uses transaction. Returns 200 updated, 404 not found or 400 baad input</summary>
+        ///<summary>Updates category with given id, catches long input. Returns 200 updated, 404 not found or 400 baad input</summary>
         public HttpResponseMessage update(int id, Category category)
         {
             if (category.category == null || id < 0) return new HttpResponseMessage(HttpStatusCode.BadRequest);

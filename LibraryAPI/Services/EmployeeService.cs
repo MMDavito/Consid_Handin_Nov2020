@@ -64,7 +64,8 @@ namespace LibraryAPI.Services
             }
         }
 
-        ///<summary>No time to explain without autoGen comments, and no time for that nore correct try-catch (only sql exceptions, should include system exceptions)</summary>
+        ///<summary> Will allow for corruption if not checked in forehand so that if IS_CEO the manager_id is null.
+        ///No time to explain without autoGen comments, and no time for that nore correct try-catch (only sql exceptions, should include system exceptions)</summary>
         public HttpResponseMessage insert(Employee employee)
         {
             int rowsAffected = -1;
@@ -199,10 +200,11 @@ namespace LibraryAPI.Services
             else
                 return new HttpResponseMessage(HttpStatusCode.Created);
         }
-        ///<summary>Updates category with given id, catches long input, uses transaction. Returns 200 updated, 404 not found or 400 baad input</summary>
-        public HttpResponseMessage update(int id, Category category)
+        ///<summary>Will allow for corruption if not checked in forehand so that if IS_CEO the manager_id is null.
+        /// Returns 200 updated, 404 not found or 400 baad input</summary>
+        public HttpResponseMessage update(int id, Employee employee)
         {
-            if (category.category == null || id < 0) return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            if (employee.firstName == null || id < 0) return new HttpResponseMessage(HttpStatusCode.BadRequest);
             int rowsAffected = -1;
             using (SqlConnection cnn = connectionFactory.cnn)
             {
@@ -212,16 +214,72 @@ namespace LibraryAPI.Services
                 {
                     sc.Connection = cnn;
                     sc.CommandType = CommandType.Text;
-                    sc.CommandText = @"
-                    UPDATE Category SET category = @category
-                    WHERE id = @ID;
+                    if (employee.isCEO)
+                    {
+                        sc.CommandText = @"
+                    UPDATE Employee
+                    SET
+                        first_name=@first_name,
+                        last_name=@last_name,
+                        salary=@salary,
+                        is_ceo='true',
+                        is_manager='false',
+                        manager_id=@manager_id
+                    WHERE -- Following is to allow for updating manager to ceo OR employee to ceo, ALTERNITEVLY simply updating ceo (if is_ceo='true')
+                    id=@ID AND(
+                        is_ceo='true'
+                        OR NOT 
+                        (SELECT COUNT(id)
+                            FROM Employee as e WHERE e.is_ceo= 'true'
+                        )> 0);
                     ";
-                    sc.Parameters.Add("@ID", SqlDbType.Int);
-                    sc.Parameters["@ID"].Value = id;
-
-                    sc.Parameters.Add("@category", SqlDbType.NVarChar);
-                    sc.Parameters["@category"].Value = category.category;
-
+                    }
+                    else if (employee.isManager)
+                    {
+                        sc.CommandText = @"
+                     UPDATE Employee
+                    SET
+                        first_name=@first_name,
+                        last_name=@last_name,
+                        salary=@salary,
+                        is_ceo='false',
+                        is_manager='true',
+                        manager_id=@manager_id
+                    WHERE
+                    id=@ID AND NOT
+                        (SELECT COUNT(e.id)
+                            FROM Employee as e WHERE e.id=@manager_id 
+                            AND (e.is_manager=0 AND e.is_ceo=0)
+                        )> 0;
+";//Where not regular employee (employee.isCeo ==false && employee.isManager == false), it should however allow manager_ID=null
+                    }
+                    else
+                    {
+                        //Employee cant be managed by ceo
+                        sc.CommandText = @"
+                    UPDATE Employee
+                    SET
+                        first_name=@first_name,
+                        last_name=@last_name,
+                        salary=@salary,
+                        is_ceo='false',
+                        is_manager='false',
+                        manager_id=@manager_id
+                    WHERE
+                        id=@ID
+                        AND
+                        (SELECT COUNT(e.id)
+                            FROM Employee as e WHERE e.id=@manager_id 
+                            AND (e.is_manager=1)
+                        )> 0;
+                    ";
+                    }
+                    //WILL ADD WITH VALUE BECAUSE LACKING TIME:
+                    sc.Parameters.AddWithValue("@ID", id);
+                    sc.Parameters.AddWithValue("@first_name", employee.firstName);
+                    sc.Parameters.AddWithValue("@last_name", employee.lastName);
+                    sc.Parameters.AddWithValue("@salary", employee.salary);
+                    sc.Parameters.AddWithValue("@manager_id", (object)employee.managerId ?? DBNull.Value);//Should have added an if is ceo and skipped, but wanted same format as the insert
                     //TODO FIND WHERE TRYCATCH SHALL BE
                     try
                     {
@@ -268,7 +326,7 @@ namespace LibraryAPI.Services
         }
         public string getOne(int id)
         {
-            LinkedList<Category> categories = new LinkedList<Category>();
+            LinkedList<Employee> employees = new LinkedList<Employee>();
 
             using (SqlConnection cnn = connectionFactory.cnn)
             {
@@ -279,24 +337,62 @@ namespace LibraryAPI.Services
                     sc.Connection = cnn;
                     sc.CommandType = CommandType.Text;
                     sc.CommandText = @"
-                    SELECT * FROM category WHERE id = @ID;
+                    SELECT * FROM Employee WHERE id = @ID;
                     ";
                     sc.Parameters.Add("@ID", SqlDbType.Int);
                     sc.Parameters["@ID"].Value = id;
                     SqlDataReader reader = sc.ExecuteReader();
                     while (reader.Read())
                     {
-                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("\n");
-                        int tempId = reader.GetInt32(0);
-                        string temp = reader.GetString(1);
-                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("ID: " + id + ", Name: " + temp);
-                        categories.AddLast((new Category(id, temp)));
-                    }
+                        string firstName = null;
+                        string lastName = null;
+                        Decimal salary = -1.0m;
+                        bool isCEO = false;
+                        bool isManager = false;
+                        Nullable<int> managerId = null;
 
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("\n");
+                        id = reader.GetInt32(0);
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("HELVETE HEMTADE ID: " + id);
+                        firstName = reader.GetString(1);
+                        lastName = reader.GetString(2);
+                        salary = reader.GetDecimal(3);
+                        isCEO = reader.GetBoolean(4);
+                        isManager = reader.GetBoolean(5);
+                        if (!reader.IsDBNull(6)) managerId = reader.GetInt32(6);
+
+
+                        employees.AddLast(new Employee(id, firstName, lastName, salary, isCEO, isManager, managerId, null));
+                    }
                     cnn.Close();
+
+                }
+                foreach (Employee tempEmployee in employees)
+                {
+                    cnn.Open();//Could been async, but nothing realy is.
+                               //should TODO add trycatchy thingy.
+                    using (SqlCommand sc = new SqlCommand())
+                    {
+                        sc.Connection = cnn;
+                        sc.CommandType = CommandType.Text;
+                        sc.CommandText = @"
+                    SELECT id,first_name FROM Employee WHERE manager_id = @ID;
+                    ";
+                        sc.Parameters.Add("@ID", SqlDbType.Int);
+                        sc.Parameters["@ID"].Value = tempEmployee.id;
+                        SqlDataReader reader = sc.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            int tempId = -1;
+                            string tempName = null;
+                            tempId = reader.GetInt32(0);
+                            tempName = reader.GetString(1);
+                            tempEmployee.listOfManaged.AddLast(new Employee.Managed(tempId, tempName));
+                        }
+                    }
                 }
             }
-            return JsonConvert.SerializeObject(categories);
+            return JsonConvert.SerializeObject(employees);
         }
         public HttpResponseMessage delete(int id)
         {
@@ -311,7 +407,69 @@ namespace LibraryAPI.Services
                     sc.Connection = cnn;
                     sc.CommandType = CommandType.Text;
                     sc.CommandText = @"
-                    DELETE FROM Category WHERE id = @ID;
+                    DELETE FROM Employee WHERE id = @ID;
+                    ";
+                    sc.Parameters.Add("@ID", SqlDbType.Int);
+                    sc.Parameters["@ID"].Value = id;
+
+                    //TODO FIND WHERE TRYCATCH SHALL BE
+                    try
+                    {
+                        rowsAffected = sc.ExecuteNonQuery();//Could be async but will probably not have time to understand cancelationTokens
+                        if (HelperVariables.IS_DEBUG) System.Console.WriteLine("RowsAffected: {0}", rowsAffected);
+                    }
+                    catch (SqlException e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("SQLException occured in employee service");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        switch (e.Number)
+                        {
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.BadRequest);//If everything else.
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        cnn.Close();
+                        if (HelperVariables.IS_DEBUG)
+                        {
+                            System.Console.WriteLine("Exception occured in employee service when deleteing stuff");
+                            System.Console.WriteLine(e);
+                            //return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);//Fail server or db
+                    }
+                }
+                cnn.Close();
+            }
+            if (rowsAffected <= 0)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            else
+                return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+        ///<summary>
+        /// Tries to delete all employees that are managed by the manager with "manager_id"="id"
+        /// Could be denied by the database constraint if one of its managed employees manages others.
+        ///</summary>
+        public HttpResponseMessage deleteManaged(int id)
+        {
+            if (id < 0) return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            int rowsAffected = -1;
+            using (SqlConnection cnn = connectionFactory.cnn)
+            {
+                cnn.Open();//Could been async, but nothing realy is.
+                           //should TODO add trycatchy thingy.
+                using (SqlCommand sc = new SqlCommand())
+                {
+                    sc.Connection = cnn;
+                    sc.CommandType = CommandType.Text;
+                    sc.CommandText = @"
+                    DELETE FROM Employee WHERE managed_by = @ID;
                     ";
                     sc.Parameters.Add("@ID", SqlDbType.Int);
                     sc.Parameters["@ID"].Value = id;

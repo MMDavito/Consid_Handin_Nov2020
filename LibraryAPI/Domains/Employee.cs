@@ -1,8 +1,24 @@
 using System;
+using System.Collections.Generic;
 namespace LibraryAPI.Domains
 {
     public class Employee
     {
+         
+        public class Managed
+        {
+            public int id;
+            public string first_name;
+            public Managed(int id, string first_name)
+            {
+                this.id = id;
+                this.first_name = first_name;
+            }
+        }
+        ///<summary>
+        /// May use this when returning getOne() from service.
+        /// May also just be waste of space.
+        ///</summary>
         public Nullable<int> id;
         public string firstName;
         public string lastName;
@@ -11,9 +27,9 @@ namespace LibraryAPI.Domains
         public bool isManager;
         public Nullable<int> managerId; //Whom is managed by. NO ONE MANAGES CEO (should create bug where CEO == Manager of himself, thereby making impossible to delete)
                                         //WOULD USED THIS AND JOINED; BUT NO TIME, (possibly creating an domain object "manager" to use instead of employee, but NO TIME)        public Employee manager; //Whom is managed by. NO ONE MANAGES CEO (should create bug where CEO == Manager of himself, thereby making impossible to delete)
-
-
         public Nullable<int> rank; //To use when calculating salary when comming from frontend (where inputed an rank integer between 1 and 10).
+        public LinkedList<Managed> listOfManaged = new LinkedList<Managed>();//Will probably never be used
+
         ///<summary>
         /// Will allow null as name and other things, because complete lack of time. Will however ignore ceo with managerId.
         ///<summary>
